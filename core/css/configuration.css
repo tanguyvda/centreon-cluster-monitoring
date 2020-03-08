@@ -19,3 +19,7 @@
 #cluster_list {
   background-color: green;
 } */
+
+.hover-icon:hover {
+  cursor: pointer;
+}

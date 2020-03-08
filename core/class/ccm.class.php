@@ -12,7 +12,7 @@ class ccm
     /**
     * get list of hosts
     *
-    * @return json with hosts list
+    * @return array with hosts list
     */
     public function listHosts() {
         global $centreon;
@@ -39,5 +39,26 @@ class ccm
         $hostList['row_count'] = $this->db->numberRows();
 
         return $hostList;
+    }
+
+    /**
+    * search through list
+    *
+    * @param array data and options list
+    *
+    * @return array with data that matched pattern
+    */
+    public function searchList($data) {
+        ini_set('pcre.backtrack_limit', 50000);
+        $result = [];
+        $pattern = htmlentities($data['search_value'], ENT_QUOTES);
+
+        foreach ($data['data'] as $key => $value) {
+            if (preg_grep("/" . $pattern . "/", $value)) {
+                $result[] = $value;
+            }
+        }
+        
+        return $result;
     }
 }

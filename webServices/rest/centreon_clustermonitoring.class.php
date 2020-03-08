@@ -23,7 +23,8 @@ class CentreonClustermonitoring extends CentreonWebService
 
         try {
             $ccm = new ccm;
-            $result = $ccm->listHosts();
+            $method = $this->arguments['ccm_method'];
+            $result = $ccm->$method($this->arguments);
         } catch (\Exception $e) {
             throw new RestBadRequestException($e->getMessage());
         }
