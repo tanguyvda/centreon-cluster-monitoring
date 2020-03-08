@@ -1,0 +1,21 @@
+<link href="./modules/centreon-cluster-monitoring/core/css/configuration.css" rel="stylesheet" type="text/css"/>
+<link href="./modules/centreon-cluster-monitoring/core/css/materialize.min.css" rel="stylesheet" type="text/css"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<div id="content" class="row">
+  <div id="host_pannel" class="col s3">
+    <div class="input-field search_host_list">
+      <i class="material-icons prefix">search</i>
+      <input id="search_host" type="text" class="validate search_host">
+      <label for="search_host">Search hosts</label>
+    </div>
+    <table id="host_list">
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  <div id="cluster_group" class="col s6">tutu</div>
+  <div id="cluster_list" class="col s3">tata</div>
+</div>
+
+<script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/materialize.min.js"></script>
+<script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/configuration.js"></script>

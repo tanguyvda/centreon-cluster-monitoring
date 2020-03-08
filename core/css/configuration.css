@@ -1,0 +1,21 @@
+/* #content {
+  height: 100%;
+}
+
+#host_list, #cluster_group, #cluster_list {
+  width: 30%;
+  height: 100%;
+  display: inline-block;
+}
+
+#host_list {
+  background-color: red;
+}
+
+#cluster_group {
+  background-color: blue;
+}
+
+#cluster_list {
+  background-color: green;
+} */
