@@ -1,22 +1,98 @@
-<link href="./modules/centreon-cluster-monitoring/core/css/configuration.css" rel="stylesheet" type="text/css"/>
-<link href="./modules/centreon-cluster-monitoring/core/css/materialize.min.css" rel="stylesheet" type="text/css"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<div id="content" class="row">
-  <div id="host_pannel" class="col s3">
-    <div class="input-field search_host_list">
-      <i class="material-icons prefix">search</i>
-      <input id="search_host" type="text" class="validate search_host">
-      <label for="search_host">Search hosts</label>
-    </div>
-    <table id="host_list">
-      <tbody id="host_list_tbody">
-      </tbody>
-    </table>
+<html>
+<head>
+  <link href="./modules/centreon-cluster-monitoring/core/css/reset.css" rel="stylesheet" type="text/css"/>
+  <link href="./modules/centreon-cluster-monitoring/core/css/configuration.css" rel="stylesheet" type="text/css"/>
+  <link href="./modules/centreon-cluster-monitoring/core/css/materialize.min.css" rel="stylesheet" type="text/css"/>
+  <link href="./modules/centreon-cluster-monitoring/core/css/dragula.min.css" rel="stylesheet" type="text/css"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+<div class="row">
+  <div class="input-field ccm-search_host_list col s3">
+    <i class="material-icons prefix">search</i>
+    <input id="ccm-search_host" type="text" class="validate ccm-search_host">
+    <label for="ccm-search_host">Search hosts</label>
   </div>
-  <div id="cluster_group" class="col s6">tutu</div>
-  <div id="cluster_list" class="col s3">tata</div>
+</div>
+<div class="row ccm-parent">
+  <div class="ccm-wrapper col s12">
+    <div class="col s3 ccm-host_list_wrapper">
+      <div id="ccm-host_list" class="ccm-container">
+      </div>
+    </div>
+    <div class="col s8 ccm-cluster_group_wrapper">
+      <div id="ccm-drop_cluster_group" class="col s12 m6 l6 xl3 ccm-drop_cluster_group valign-wrapper">
+        <div class="center-align">DRAG AND DROP YOU HOSTS TO CREATE A CLUSTER GROUP</div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<div id="ccm-modal_drop_cluster_group" class="modal modal-fixed-footer">
+    <div class="modal-content row">
+      <div class="input-field col s8">
+        <input id="ccm-cluster_group_form_group_name" type="text">
+        <label for="ccm-cluster_group_form_goup_name">CLUSTER GROUP NAME</label>
+      </div>
+      <div class="col s8">
+        <label>
+          <input id="ccm-inherit_dt" type="checkbox" class="filled-in" checked="checked"/>
+          <span>Inherit downtimes</span>
+        </label>
+        <label>
+          <input id="ccm-inherit_ack" type="checkbox" class="filled-in" checked="checked"/>
+          <span>Inherit acknowledgments</span>
+        </label>
+      </div>
+      <div class="switch col s8">
+        <label>
+          Hosts' services worst status
+          <input id="ccm-status_calculation_method" type="checkbox">
+          <span class="lever"></span>
+          Host must be down
+        </label>
+      </div>
+      <ul id="ccm-cluster_group_configuration_popup_collapsible" class="collapsible col s10 offset-s1">
+        <li>
+          <div class="collapsible-header">
+            <div class="input-field col s4">
+              <input id="ccm-cluster_group_form_cluster_name" type="text">
+              <label for="ccm-cluster_group_form_cluster_name">CLUSTER NAME</label>
+            </div>
+            <div class="input-field col s2">
+              <input id="ccm-cluster_group_form_cluster_wthreshold" type="text">
+              <label for="ccm-cluster_group_form_cluster_wthreshold">warning</label>
+            </div>
+            <div class="input-field col s2">
+              <input id="ccm-cluster_group_form_cluster_cthreshold" type="text">
+              <label for="ccm-cluster_group_form_cluster_cthreshold">critical</label>
+            </div>
+          </div>
+          <div id="ccm-first_collapisble_item" class="collapsible-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Host name</th>
+                  <th>Host alias</th>
+                  <th>Host address</th>
+                  <th>Host comment</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody id="ccm-cluster_creation_table_body">
+              </tbody>
+            </table>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="createClusterGroup()">Agree</a>
+    </div>
+  </div>
+
+<body>
 <script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/materialize.min.js"></script>
-<script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/fuse.min.js"></script>
+<script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/dragula.min.js"></script>
 <script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/configuration.js"></script>
+</html>

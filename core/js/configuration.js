@@ -1,5 +1,4 @@
 $(document).ready(function () {
-  $('.tooltipped').tooltip();
   $.ajax({
     url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
     type: 'POST',
@@ -10,22 +9,15 @@ $(document).ready(function () {
     }),
     success: function (data) {
       if (data) {
-        var hostList = [];
+        var tanguyData = data;
         for (const key in data) {
-          if (key !== 'row_count') {
-            $('#host_list > tbody:last-child').append('<tr><td>' + data[key].host_name + '</td></tr>');
-            hostList.push(
-              {
-                host_id: data[key].host_id,
-                host_name: data[key].host_name,
-                host_address: data[key].host_address,
-                host_alias: data[key].host_alias,
-                host_comment: data[key].host_comment
-              }
-            );
-          }
+          buildHostList(data, key);
         }
+        buildTooltip('.hostTooltip');
+        buildModal();
+        buildCollapsible();
         startSearchHost(data);
+        enableDragula();
       } else {
         console.log('not good');
       }
@@ -37,22 +29,9 @@ $(document).ready(function () {
   });
 });
 
+
 function startSearchHost (data) {
-  var fuseOptions = {
-    keys: ['host_name'],
-    id: 'host_name',
-    location: 0,
-    distance: 5
-    // includeScore: true,
-    // includeMatches: true
-  };
-  $('#search_host').change(function () {
-    // var fuse = new Fuse(data, fuseOptions);
-    // let searchResult = fuse.search($('#search_host').val());
-    // $('#host_list_tbody').empty();
-    // for (let key in searchResult) {
-    //   $('#host_list > tbody:last-child').append('<tr><td>' + searchResult[key] + '</td></tr>');
-    // }
+  $('#ccm-search_host').change(function () {
     $.ajax({
       url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
       type: 'POST',
@@ -62,20 +41,288 @@ function startSearchHost (data) {
         ccm_method: 'searchList',
         data: data,
         fields: ['host_name', 'host_address'],
-        search_value: $('#search_host').val()
+        search_value: $('#ccm-search_host').val()
       }),
       success: function (data) {
-        $('#host_list_tbody').empty();
+        $('#ccm-host_list').empty();
         for (const key in data) {
-          $('#host_list > tbody:last-child').append('<tr><td>' + data[key].host_name + '</td></tr>');
+          buildHostList(data, key);
         }
-        console.log(data);
+        buildTooltip('.hostTooltip');
       },
       error: function (error) {
         console.log('very bad');
         console.log(error);
       }
     });
-    // console.log(searchResult);
   });
+}
+
+function buildHostList (hostList, key) {
+  $('#ccm-host_list').append(
+    '<div id="' + key + '_' + hostList[key].host_id + '_' + hostList[key].host_name + '" class="ccm-host col s12"' +
+      'data-json="' + htmlEscape(JSON.stringify(hostList[key])) + '">' +
+        '<div class="col s1 m1 l1 xl1 ccm-host_icon hide-on-small-only">' +
+          '<img class="ico-18" src="' + hostList[key].icon + '"/>' +
+        '</div>' +
+        '<div class="col s6 m6 l9 xl9 ccm-host_name">' +
+          hostList[key].host_name +
+        '</div>' +
+        '<div class="col s1 m1 l1 xl1 ccm-icon_wrapper">' +
+          '<i class="material-icons prefix ccm-info_icon hostTooltip"' +
+            'data-position="bottom"' +
+            'data-tooltip="' +
+              'host name: ' + hostList[key].host_name +
+              '<br>host alias: ' + hostList[key].host_alias +
+              '<br>host address: ' + hostList[key].host_address +
+              '<br>host comment: ' + hostList[key].host_comment +
+              '">info_outline</i>' +
+        '</div>' +
+    '</div>'
+  );
+}
+
+function buildTooltip (className) {
+  const elems = document.querySelectorAll(className);
+  M.Tooltip.init(elems);
+}
+
+function buildModal () {
+  const elems = document.querySelectorAll('.modal');
+  M.Modal.init(elems);
+}
+
+function buildCollapsible () {
+  const elems = document.querySelectorAll('.collapsible');
+  M.Collapsible.init(elems);
+}
+
+function buildCollapsibleHostList (hostInformation) {
+  $('#ccm-cluster_creation_table_body').empty();
+  const keys = Object.keys(hostInformation);
+  for (const key of keys) {
+    $('#ccm-cluster_creation_table_body').append(
+      '<tr data-json="' + htmlEscape(JSON.stringify(hostInformation[key])) + '">' +
+      '<td>' + hostInformation[key].host_name + '</td><td>' +
+      hostInformation[key].host_alias + '</td><td>' +
+      hostInformation[key].host_address + '</td><td>' +
+      $('<div/>').text(hostInformation[key].host_comment).html() + '</td><td>X</td></tr>'
+    );
+  }
+}
+
+function enableDragula () {
+  var ccmSource = $('#ccm-host_list');
+  var ccmTarget = $('#ccm-drop_cluster_group');
+  var hasMultiple = false;
+  var selectedItems;
+  var mirrorContainer;
+
+  var drake = dragula([ccmSource[0], ccmTarget[0]], {
+    revertOnSpill: true,
+    copy: true
+  });
+
+  drake.on('drag', (el) => {
+    console.log('drag');
+  }).on('cloned', (clone, original, type) => {
+    // dragging from host list to cluster group
+    var isFromSource = $(original).parent().attr('id') === 'ccm-host_list';
+    if (isFromSource) {
+      // grab the mirror created by dragula
+      mirrorContainer = $('.gu-mirror').first();
+      // remove class selectedItem on created mirrors because they don't need it
+      mirrorContainer.removeClass('selectedItem');
+      // we add the row class to our mirror container so our children div stay inline instead of one under the other
+      mirrorContainer.addClass('row');
+      // get multi selected items
+      selectedItems = $('.selectedItem');
+      // do we have multiple items selected
+      hasMultiple = selectedItems.length > 1 || (selectedItems.length === 1 &&  !$(original).hasClass('selectedItem'));
+      if (hasMultiple) {
+        // if we already dragged something from an unselected item, we add the class selectedItem
+        $('.gu-transit').addClass('selectedItem');
+        selectedItems = $('.selectedItem');
+        // empty the mirror container, we are going to add in it our own items
+        mirrorContainer.empty();
+        // clone the selected items into the mirror container
+        selectedItems.each(function (index) {
+          // the item
+          var item = $(this);
+          // clone the item
+          var mirror = item.clone(true);
+          // remove the state classes
+          mirror.removeClass('selectedItem gu-transit');
+          // add the clone to the mirror container
+          mirrorContainer.append(mirror);
+          mirrorContainer.css('border-color', '#000');
+          // add drag state class to item
+          item.addClass('gu-transit');
+        });
+      }
+    } else {
+      // clear all flags
+      hasMultiple = false;
+      selectedItems.removeClass('selectedItem');
+      selectedItems = $([]);
+    }
+  }).on('over', function (el, container, source) {
+    // hovering over cluster group ?
+    var isOverTarget = $(container).attr('id') === 'ccm-drop_cluster_group';
+    if (isOverTarget) {
+      $(container).css('border-color', '#000');
+    }
+    selectedItems.css('display', 'none');
+  }).on('drop', function (el, target, source, sibling) {
+    // convert to jquery
+    target = $(target);
+    const hostInformation = [];
+    // flag if dropped on cluster group
+    var isTarget = target.attr('id') === 'ccm-drop_cluster_group';
+    $('#ccm-drop_cluster_group').addClass('modal-trigger');
+    // are we dropping multiple items
+    if (hasMultiple) {
+      // are we adding items to cluster group
+      if (isTarget) {
+        // get the default, single dropped item
+        // var droppedItem = target.find('.selectedItem').first();
+        $(mirrorContainer.children()).each(function () {
+          hostInformation[$(this).attr('id')] = $(this).data('json');
+        });
+        buildCollapsibleHostList(hostInformation);
+        triggerModal();
+        // remove the remaining items from the dom
+        $('.selectedItem').removeClass('.selectedItem');
+        // clear flag
+        hasMultiple = false;
+        drake.cancel(true);
+      } else { // keeping items on the source
+        drake.cancel(true);
+      }
+    } else {
+      hostInformation[$(mirrorContainer[0]).attr('id')] = $(mirrorContainer[0]).data('json');
+      buildCollapsibleHostList(hostInformation);
+      triggerModal();
+      // if only one item has been selected, remove the selected item class
+      ccmTarget.children().removeClass('selectedItem');
+      drake.cancel(true);
+    }
+  }).on('cancel', function (el, container, source) {
+    console.log('cancel');
+  }).on('out', function (el, container) {
+    // unhide all
+    $(container).css('border-color', '#ededed');
+    selectedItems.css('display', '');
+  }).on('moves', function (el, container, handle) {
+    // for non draggable line breaks
+    return !$(el).is('hr');
+  }).on('dragend', function () {
+    // rebind click event handlers for the new layouts
+    unbindMultiselectOnTarget();
+    bindMultiselectOnSource();
+    // remove state classes for multiple selections that may be back on the source
+    selectedItems.removeClass('gu-transit');
+    selectedItems.css('display', '');
+  });
+
+  // sets a global flag of whether the shift key is pressed
+  function bindShiftPressEvent () {
+    // set flag on
+    $(document).keydown(function(event){
+      if(event.shiftKey)
+      console.log(event.keyCode);
+          shiftIsPressed = true;
+    });
+
+    // set flag off
+    $(document).keyup(function(){
+        shiftIsPressed = false;
+    });
+  }
+
+  // enables items on source to be multiselected with a 'shift + click'
+  function bindMultiselectOnSource () {
+    ccmSource.children().each((index, el) => {
+      $(el).off('click');
+      $(el).on('click', function () {
+        if (shiftIsPressed) {
+          $(this).toggleClass('selectedItem');
+        }
+      });
+    });
+  }
+
+  // disables multiselect on items on the target
+  function unbindMultiselectOnTarget () {
+    ccmTarget.children().each((index, el) => {
+      $(el).off('click');
+    });
+  }
+
+  // initial bindings
+  function init () {
+    bindShiftPressEvent();
+    bindMultiselectOnSource();
+  }
+
+  // start this
+  init();
+}
+
+function htmlEscape (str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\//g, '&#x2F');
+}
+
+// I needed the opposite function today, so adding here too:
+function htmlUnescape (str) {
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&#x2F/g, '/');
+}
+
+function createClusterGroup () {
+  const clusterGroupName = $('#ccm-cluster_group_form_group_name').val();
+  const inheritAck = ($('#ccm-inherit_ack').is(':checked')) ? true : false;
+  const inheritDt = ($('#ccm-inherit_dt').is(':checked')) ? true : false;
+  const statusCalculationMethod = ($('#ccm-status_calculation_method').is(':checked')) ? 'host' : 'service';
+  const clusterName = $('#ccm-cluster_group_form_cluster_name').val();
+  const warningThreshold = $('#ccm-cluster_group_form_cluster_wthreshold').val();
+  const criticalThreshold = $('#ccm-cluster_group_form_cluster_cthreshold').val();
+
+  const clusterGroupConfiguration = {
+    clusterGroupeName: clusterGroupName,
+    statusCalculation: {
+      inheritDt: inheritDt,
+      inheritAck: inheritAck,
+      statusCalculationMethod: statusCalculationMethod
+    },
+    clusters: {}
+  };
+
+  clusterGroupConfiguration.clusters[clusterName] = {
+    warningThreshold: warningThreshold,
+    criticalThreshold: criticalThreshold
+  };
+
+  $('#ccm-cluster_creation_table_body > tr').each(function (index, tr) {
+    clusterGroupConfiguration.clusters[clusterName][index] = $(tr).data('json');
+  });
+  console.log(clusterGroupConfiguration);
+}
+
+function triggerModal () {
+  $('#ccm-drop_cluster_group').attr('href', '#ccm-modal_drop_cluster_group');
+  $('#ccm-drop_cluster_group')[0].click();
+  $('#ccm-drop_cluster_group').removeAttr('href');
+  $('#ccm-drop_cluster_group').removeClass('modal-trigger')
 }
