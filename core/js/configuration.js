@@ -175,8 +175,11 @@ function enableDragula () {
     } else {
       // clear all flags
       hasMultiple = false;
-      selectedItems.removeClass('selectedItem');
-      selectedItems = $([]);
+      if (selectedItems) {
+        selectedItems.removeClass('selectedItem');
+        selectedItems = $([]);
+      }
+      drake.cancel(true);
     }
   }).on('over', function (el, container, source) {
     // hovering over cluster group ?
@@ -231,8 +234,10 @@ function enableDragula () {
     unbindMultiselectOnTarget();
     bindMultiselectOnSource();
     // remove state classes for multiple selections that may be back on the source
-    selectedItems.removeClass('gu-transit');
-    selectedItems.css('display', '');
+    if (selectedItems) {
+      selectedItems.removeClass('gu-transit');
+      selectedItems.css('display', '');
+    }
   });
 
   // sets a global flag of whether the shift key is pressed
