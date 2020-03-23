@@ -1,7 +1,12 @@
 $(document).ready(function () {
   $(document).on('click', function (e) {
-    if (!$(e.target).is('.ccm-host') && !$(e.target).parent().is('.ccm-host')) {
+    // remove class selectedItem if click outside of the host list. Because of margin/padding it is much more intuitive
+    // to not remove the selectedItem class if we click somewhere on the whole list. To unselect something from the list
+    // people will tend to click outside of the list. This behaviour is better than having a random click unselect the
+    // whole list because the click happened to be on the padding/marging of the parent div
+    if (!$(e.target).is('.ccm-host') && !$(e.target).parent().is('.ccm-host') && !$(e.target).is('#ccm-host_list')) {
       $('.ccm-host').removeClass('selectedItem');
+      console.log(e.target);
     }
   });
   $.ajax({
@@ -324,7 +329,6 @@ function createClusterGroup () {
   $('#ccm-cluster_creation_table_body > tr').each(function (index, tr) {
     clusterGroupConfiguration.clusters[clusterName][index] = $(tr).data('json');
   });
-  console.log(clusterGroupConfiguration);
 }
 
 function triggerModal () {
