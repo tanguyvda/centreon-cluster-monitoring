@@ -6,7 +6,6 @@ $(document).ready(function () {
     // whole list because the click happened to be on the padding/marging of the parent div
     if (!$(e.target).is('.ccm-host') && !$(e.target).parent().is('.ccm-host') && !$(e.target).is('#ccm-host_list')) {
       $('.ccm-host').removeClass('selectedItem');
-      console.log(e.target);
     }
   });
   $.ajax({
@@ -151,6 +150,8 @@ function enableDragula () {
       // do we have multiple items selected
       hasMultiple = selectedItems.length > 1 || (selectedItems.length === 1 &&  !$(original).hasClass('selectedItem'));
       if (hasMultiple) {
+        // the gu-mirror div is a clone of the first element we drag, we remove unecessary classes to avoid visual artifacts
+        $('.gu-mirror').removeClass('ccm-host col s12');
         // if we already dragged something from an unselected item, we add the class selectedItem
         $('.gu-transit').addClass('selectedItem');
         selectedItems = $('.selectedItem');
@@ -166,7 +167,7 @@ function enableDragula () {
           mirror.removeClass('selectedItem gu-transit');
           // add the clone to the mirror container
           mirrorContainer.append(mirror);
-          mirrorContainer.css('border-color', '#000');
+          $(mirrorContainer).parent().addClass('row');
           // add drag state class to item
           item.addClass('gu-transit');
         });
@@ -181,7 +182,7 @@ function enableDragula () {
     // hovering over cluster group ?
     var isOverTarget = $(container).attr('id') === 'ccm-drop_cluster_group';
     if (isOverTarget) {
-      $(container).css('border-color', '#000');
+      $('#ccm-drop_cluster_group').css({"border-color": "#000", "color": "#000"});
     }
     selectedItems.css('display', 'none');
   }).on('drop', function (el, target, source, sibling) {
@@ -221,12 +222,10 @@ function enableDragula () {
   }).on('cancel', function (el, container, source) {
     console.log('cancel');
   }).on('out', function (el, container) {
-    // unhide all
-    $(container).css('border-color', '#ededed');
-    selectedItems.css('display', '');
+    $('#ccm-drop_cluster_group').css({"border-color": "#ededed", "color": "#ededed"});
   }).on('moves', function (el, container, handle) {
     // for non draggable line breaks
-    return !$(el).is('hr');
+    // return !$(el).is('hr');
   }).on('dragend', function () {
     // rebind click event handlers for the new layouts
     unbindMultiselectOnTarget();
@@ -241,7 +240,6 @@ function enableDragula () {
     // set flag on
     $(document).keydown(function(event){
       if(event.shiftKey)
-      console.log(event.keyCode);
           shiftIsPressed = true;
     });
 

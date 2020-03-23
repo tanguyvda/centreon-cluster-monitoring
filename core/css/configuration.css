@@ -52,7 +52,8 @@ html, body {
   font-weight: bolder;
   font-size: 30px;
 }
-.gu-transit {
+
+#ccm-drop_cluster_group > .gu-transit {
   display: none;
 }
 .selectedItem {
