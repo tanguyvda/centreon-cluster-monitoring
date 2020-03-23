@@ -1,4 +1,9 @@
 $(document).ready(function () {
+  $(document).on('click', function (e) {
+    if (!$(e.target).is('.ccm-host') && !$(e.target).parent().is('.ccm-host')) {
+      $('.ccm-host').removeClass('selectedItem');
+    }
+  });
   $.ajax({
     url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
     type: 'POST',
@@ -115,6 +120,7 @@ function enableDragula () {
   var ccmSource = $('#ccm-host_list');
   var ccmTarget = $('#ccm-drop_cluster_group');
   var hasMultiple = false;
+  var shiftIsPressed;
   var selectedItems;
   var mirrorContainer;
 
@@ -249,6 +255,7 @@ function enableDragula () {
           $(this).toggleClass('selectedItem');
         }
       });
+
     });
   }
 
