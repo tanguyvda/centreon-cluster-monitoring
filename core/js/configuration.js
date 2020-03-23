@@ -315,22 +315,48 @@ function createClusterGroup () {
   const criticalThreshold = $('#ccm-cluster_group_form_cluster_cthreshold').val();
 
   const clusterGroupConfiguration = {
-    clusterGroupeName: clusterGroupName,
+    clusterGroupName: clusterGroupName,
     statusCalculation: {
       inheritDt: inheritDt,
       inheritAck: inheritAck,
       statusCalculationMethod: statusCalculationMethod
     },
-    clusters: {}
-  };
-
-  clusterGroupConfiguration.clusters[clusterName] = {
-    warningThreshold: warningThreshold,
-    criticalThreshold: criticalThreshold
+    clusters: [{
+      name: clusterName,
+      warningThreshold: warningThreshold,
+      criticalThreshold: criticalThreshold,
+      hosts: []
+    }]
   };
 
   $('#ccm-cluster_creation_table_body > tr').each(function (index, tr) {
-    clusterGroupConfiguration.clusters[clusterName][index] = $(tr).data('json');
+    clusterGroupConfiguration.clusters[0].hosts[index] = $(tr).data('json');
+  });
+
+  saveClusterGroup(clusterGroupConfiguration);
+}
+
+function saveClusterGroup (clusterGroupConfiguration) {
+  $.ajax({
+    url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify({
+      ccm_method: 'saveClusterGroup',
+      param: clusterGroupConfiguration
+    }),
+    success: function (data) {
+      if (data) {
+        console.log('on a save');
+      } else {
+        console.log('not good');
+      }
+    },
+    error: function (error) {
+      console.log('very bad');
+      console.log(error);
+    }
   });
 }
 

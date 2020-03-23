@@ -88,6 +88,91 @@ class ccm
     }
 
     /**
+    * save cluster group configuration in database
+    *
+    * @param array $conf cluster group configuration data
+    *
+    * @return bool
+    *
+    * throw \Exception if we can't reach database
+    */
+    public function saveClusterGroup($data) {
+        $conf = $data['param'];
+        $clusterGroupName = $conf['clusterGroupName'];
+        $inheritDt = $conf['statusCalculation']['inheritDt'] == 1 ? $conf['statusCalculation']['inheritDt'] : 0;
+        $inheritAck = $conf['statusCalculation']['inheritAck'] == 1 ? $conf['statusCalculation']['inheritAck'] : 0;
+        $ignoreServices = $conf['statusCalculation']['statusCalculationMethod'] == 'service' ? 0 : 1;
+        $clusterName = $conf['clusters'][0]['name'];
+        $warningThreshold = $conf['clusters'][0]['warningThreshold'];
+        $criticalThreshold = $conf['clusters'][0]['criticalThreshold'];
+
+        $query = "INSERT INTO mod_ccm_cluster_group (`cluster_group_name`) VALUE (:pdo_" . $clusterGroupName . ")";
+
+        $res = $this->db->prepare($query);
+        $res->bindValue(':pdo_' . $clusterGroupName, (string)$clusterGroupName, PDO::PARAM_STR);
+        try {
+            $res->execute();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        $pdoParams =  array(
+            $clusterName => 'string',
+            $clusterGroupName => 'string',
+            $warningThreshold => 'int',
+            $criticalThreshold => 'int'
+        );
+
+        $query = "INSERT INTO mod_ccm_cluster (`cluster_name`,`cluster_group_id`,`warning_threshold`," .
+            " `critical_threshold`, `inherit_downtime`, `inherit_ack`, `ignore_services`) VALUE (" .
+            " :pdo_" . $clusterName . ", (SELECT cluster_group_id FROM mod_ccm_cluster_group" .
+            " WHERE `cluster_group_name` = :pdo_" . $clusterGroupName . "), :pdo_" . $warningThreshold .
+            ", :pdo_" . $criticalThreshold . ", " . $inheritDt . ", " . $inheritAck . ", " . $ignoreServices .")";
+
+        foreach ($pdoParams as $key => $value) {
+            $mainQueryParameters[] = [
+                'parameter' => ':pdo_' . $key,
+                'value' => ($value == 'int' ? (int)$key : (string)$key),
+                'type' => ($value == 'int' ? PDO::PARAM_INT : PDO::PARAM_STR)
+            ];
+        }
+
+        $res = $this->db->prepare($query);
+        foreach ($mainQueryParameters as $param) {
+            $res->bindValue($param['parameter'], $param['value'], $param['type']);
+        }
+
+        try {
+            $res->execute();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        unset($mainQueryParameters);
+        $clusterArray[] = $clusterName;
+        $clusterId = $this->getClustersId($clusterArray);
+
+        $query = "INSERT INTO mod_ccm_cluster_host_relation (`cluster_id`, `host_id`) VALUES";
+
+        foreach ($conf['clusters'][0]['hosts'] as $host) {
+            $query .= " (" . $clusterId[0]['id'] . ", :pdo_" . $host['host_id'] . "),";
+            $mainQueryParameters[] = [
+                'parameter' => ':pdo_' . $host['host_id'],
+                'value' => (int)$host['host_id'],
+                'type' => PDO::PARAM_INT
+            ];
+        }
+        $query = rtrim($query, ',');
+        $res = $this->db->prepare($query);
+        foreach ($mainQueryParameters as $param) {
+            $res->bindValue($param['parameter'], $param['value'], $param['type']);
+        }
+        $res->execute();
+
+        return true;
+    }
+
+    /**
     * get host icons
     *
     * @return array $ehiCache list of host icon
@@ -98,9 +183,51 @@ class ccm
         $res->execute();
 
         while ($row = $res->fetch()) {
-            $ehiCache[$ehi['host_host_id']] = $ehi['ehi_icon_image'];
+            $ehiCache[$row['host_host_id']] = $row['ehi_icon_image'];
         }
 
         return $ehiCache;
+    }
+
+    /**
+    * get clusters id
+    *
+    * @param array $clustersName list of clusters
+    *
+    * @return array $clustersId list of clusters id
+    *
+    * throw \Exception if we can't reach database
+    */
+    public function getClustersId($clustersName) {
+        foreach ($clustersName as $name) {
+            $labels[] = ':pdo_' . $name;
+            $mainQueryParameters[] = [
+                'parameter' => ':pdo_' . $name,
+                'value' => (string)$name,
+                'type' => PDO::PARAM_STR
+            ];
+        }
+
+        $query = "SELECT cluster_id, cluster_name FROM mod_ccm_cluster WHERE cluster_name IN (" . implode(',', $labels) . ")";
+        $res = $this->db->prepare($query);
+
+        foreach ($mainQueryParameters as $param) {
+            $res->bindValue($param['parameter'], $param['value'], $param['type']);
+        }
+
+        try {
+            $res->execute();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        while ($row = $res->fetch()) {
+            $clustersId[] = [
+                'id' => $row['cluster_id'],
+                'name' => $row['cluster_name']
+            ];
+        }
+
+        return $clustersId;
     }
 }
