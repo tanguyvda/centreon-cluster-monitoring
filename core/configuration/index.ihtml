@@ -32,7 +32,7 @@
     <div class="modal-content row">
       <div class="input-field col s8">
         <input id="ccm-cluster_group_form_group_name" type="text">
-        <label for="ccm-cluster_group_form_goup_name">CLUSTER GROUP NAME</label>
+        <label for="ccm-cluster_group_form_group_name">CLUSTER GROUP NAME</label>
       </div>
       <div class="col s8">
         <label>
@@ -60,11 +60,11 @@
               <label for="ccm-cluster_group_form_cluster_name">CLUSTER NAME</label>
             </div>
             <div class="input-field col s2">
-              <input id="ccm-cluster_group_form_cluster_wthreshold" type="text">
+              <input id="ccm-cluster_group_form_cluster_wthreshold" type="number">
               <label for="ccm-cluster_group_form_cluster_wthreshold">warning</label>
             </div>
             <div class="input-field col s2">
-              <input id="ccm-cluster_group_form_cluster_cthreshold" type="text">
+              <input id="ccm-cluster_group_form_cluster_cthreshold" type="number">
               <label for="ccm-cluster_group_form_cluster_cthreshold">critical</label>
             </div>
           </div>
@@ -87,7 +87,8 @@
       </ul>
     </div>
     <div class="modal-footer">
-      <a href="#!" class="modal-close waves-effect waves-green btn-flat" onclick="createClusterGroup()">Agree</a>
+      <a id="ccm-close_modal" href="#!" class="modal-close" style="display: none;"></a>
+      <a href="#!" class="waves-effect waves-green btn-flat" onclick="createClusterGroup()">Agree</a>
     </div>
   </div>
 

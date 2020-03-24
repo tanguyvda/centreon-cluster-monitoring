@@ -348,14 +348,13 @@ function saveClusterGroup (clusterGroupConfiguration) {
     }),
     success: function (data) {
       if (data) {
-        console.log('on a save');
+        $('#ccm-close_modal')[0].click();
       } else {
         console.log('not good');
       }
     },
     error: function (error) {
-      console.log('very bad');
-      console.log(error);
+      toastError(error.responseText);
     }
   });
 }
@@ -365,4 +364,13 @@ function triggerModal () {
   $('#ccm-drop_cluster_group')[0].click();
   $('#ccm-drop_cluster_group').removeAttr('href');
   $('#ccm-drop_cluster_group').removeClass('modal-trigger')
+}
+
+function toastError(error) {
+  const toast = '<span>' + error + '</span><button class="btn-flat toast-action" onClick="dismissToast()">Dismiss</button>';
+  M.toast({html: toast});
+}
+
+function dismissToast() {
+  M.Toast.dismissAll();
 }
