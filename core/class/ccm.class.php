@@ -113,7 +113,11 @@ class ccm
         try {
             $res->execute();
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode());
+            if ($res->errorCode() == 23000) {
+                throw new \Exception('Cluster group ' . $clusterGroupName . ' already exists');
+            } else {
+                throw new \Exception($e->getMessage(), $e->getCode());
+            }
         }
 
         $pdoParams =  array(
