@@ -19,9 +19,6 @@ CREATE TABLE IF NOT EXISTS `mod_ccm_cluster` (
   `cluster_group_id` INT(11) DEFAULT NULL,
   `warning_threshold` INT(11) DEFAULT NULL,
   `critical_threshold` INT(11) DEFAULT NULL,
-  `inherit_downtime` BOOLEAN DEFAULT true,
-  `inherit_ack` BOOLEAN DEFAULT true,
-  `ignore_services` BOOLEAN DEFAULT false,
   `cluster_type_id` INT(11) DEFAULT NULL,
   PRIMARY KEY (`cluster_id`),
   KEY `cluster_group_id` (`cluster_group_id`),
@@ -46,6 +43,9 @@ CREATE TABLE IF NOT EXISTS `mod_ccm_cluster_host_relation` (
 CREATE TABLE IF NOT EXISTS `mod_ccm_cluster_group` (
   `cluster_group_id` INT(11) NOT NULL AUTO_INCREMENT,
   `cluster_group_name` VARCHAR(255) DEFAULT NULL,
+  `inherit_downtime` BOOLEAN DEFAULT true,
+  `inherit_ack` BOOLEAN DEFAULT true,
+  `ignore_services` BOOLEAN DEFAULT false,
   PRIMARY KEY (`cluster_group_id`),
   UNIQUE KEY `cluster_group_name` (`cluster_group_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

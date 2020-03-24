@@ -22,6 +22,35 @@ html, body {
   cursor: pointer;
 }
 
+.ccm-flexbox_wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 1200px) {
+  .ccm-flexbox_card {
+    flex: 25%;
+  }
+}
+
+@media (max-width: 1200px) {
+  .ccm-flexbox_card {
+    flex: 50%;
+  }
+}
+
+@media (max-width: 992px) {
+  .ccm-flexbox_card {
+    flex: 50%;
+  }
+}
+
+@media (max-width: 600px) {
+  .ccm-flexbox_card {
+    flex: 100%;
+  }
+}
+
 .ccm-host {
   font-size: 12px;
   line-height: 40px;
@@ -31,6 +60,11 @@ html, body {
 }
 
 .ccm-host_name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-title {
   overflow: hidden;
   text-overflow: ellipsis;
 }

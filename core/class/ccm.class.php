@@ -18,11 +18,8 @@ class ccm
     */
     public function listHosts() {
         global $centreon;
-        $mediaObj = new CentreonMedia($this->db);
-        $hostObj = new CentreonHost($this->db);
         $userId = $centreon->user->user_id;
         $isAdmin = $centreon->user->admin;
-        $ehiCache = $this->_getHostIcon();
         $query = "SELECT host_id, host_name, host_address, host_alias, host_comment" .
             " FROM host WHERE host_register='1'";
 
@@ -35,20 +32,7 @@ class ccm
         $res->execute();
 
         while ($row = $res->fetch()) {
-            $row['icon'] = './img/icons/host.png';
-
-            if (isset($ehiCache[$row['host_id']]) && $ehiCache[$row['host_id']]) {
-                $row['icon'] = './img/media/' . $mediaObj->getFilename($ehiCache[$row['host_id']]);
-            } else {
-                $icon = $hostObj->replaceMacroInString($row['host_id'], getMyHostExtendedInfoImage($row['host_id'],
-                    'ehi_icon_image', 1));
-
-                if ($icon) {
-                    $row['icon'] = './img/media/' . $icon;
-                }
-            }
-
-            $hostList[] = $row;
+            $hostList[] = $this->_associateHostWithIcon($row);
         }
 
         return $hostList;
@@ -98,15 +82,18 @@ class ccm
     */
     public function saveClusterGroup($data) {
         $conf = $data['param'];
-        $clusterGroupName = $conf['clusterGroupName'];
-        $inheritDt = $conf['statusCalculation']['inheritDt'] == 1 ? $conf['statusCalculation']['inheritDt'] : 0;
-        $inheritAck = $conf['statusCalculation']['inheritAck'] == 1 ? $conf['statusCalculation']['inheritAck'] : 0;
-        $ignoreServices = $conf['statusCalculation']['statusCalculationMethod'] == 'service' ? 0 : 1;
-        $clusterName = $conf['clusters'][0]['name'];
-        $warningThreshold = $conf['clusters'][0]['warningThreshold'];
-        $criticalThreshold = $conf['clusters'][0]['criticalThreshold'];
+        $clusterGroupName = $conf['cluster_group_name'];
+        $inheritDt = $conf['statusCalculation']['inherit_downtime'] == 1 ?
+            $conf['statusCalculation']['inherit_downtime'] : 0;
+        $inheritAck = $conf['statusCalculation']['inherit_ack'] == 1 ? $conf['statusCalculation']['inherit_ack'] : 0;
+        $ignoreServices = $conf['statusCalculation']['ignore_services'] == 1 ? 1 : 0;
+        $clusterName = $conf['clusters'][0]['cluster_name'];
+        $warningThreshold = $conf['clusters'][0]['warning_threshold'];
+        $criticalThreshold = $conf['clusters'][0]['critical_threshold'];
 
-        $query = "INSERT INTO mod_ccm_cluster_group (`cluster_group_name`) VALUE (:pdo_" . $clusterGroupName . ")";
+        $query = "INSERT INTO mod_ccm_cluster_group (`cluster_group_name`, `inherit_downtime`, `inherit_ack`" .
+            ", `ignore_services`) VALUE (:pdo_" . $clusterGroupName . ", " . $inheritDt . ", " . $inheritAck .
+            ", " . $ignoreServices . ")";
 
         $res = $this->db->prepare($query);
         $res->bindValue(':pdo_' . $clusterGroupName, (string)$clusterGroupName, PDO::PARAM_STR);
@@ -121,17 +108,17 @@ class ccm
         }
 
         $pdoParams =  array(
-            $clusterName => 'string',
             $clusterGroupName => 'string',
+            $clusterName => 'string',
             $warningThreshold => 'int',
             $criticalThreshold => 'int'
         );
 
         $query = "INSERT INTO mod_ccm_cluster (`cluster_name`,`cluster_group_id`,`warning_threshold`," .
-            " `critical_threshold`, `inherit_downtime`, `inherit_ack`, `ignore_services`) VALUE (" .
+            " `critical_threshold`) VALUE (" .
             " :pdo_" . $clusterName . ", (SELECT cluster_group_id FROM mod_ccm_cluster_group" .
             " WHERE `cluster_group_name` = :pdo_" . $clusterGroupName . "), :pdo_" . $warningThreshold .
-            ", :pdo_" . $criticalThreshold . ", " . $inheritDt . ", " . $inheritAck . ", " . $ignoreServices .")";
+            ", :pdo_" . $criticalThreshold . ")";
 
         foreach ($pdoParams as $key => $value) {
             $mainQueryParameters[] = [
@@ -194,6 +181,33 @@ class ccm
     }
 
     /**
+    * link a host with its icon
+    *
+    * @param array $host host data
+    *
+    * @return $host host data with its icon
+    */
+    protected function _associateHostWithIcon($host) {
+        $hostObj = new CentreonHost($this->db);
+        $mediaObj = new CentreonMedia($this->db);
+        $ehiCache = $this->_getHostIcon();
+        $host['icon'] = './img/icons/host.png';
+
+        if (isset($ehiCache[$host['host_id']]) && $ehiCache[$host['host_id']]) {
+            $host['icon'] = './img/media/' . $mediaObj->getFilename($ehiCache[$host['host_id']]);
+        } else {
+            $icon = $hostObj->replaceMacroInString($host['host_id'], getMyHostExtendedInfoImage($host['host_id'],
+                'ehi_icon_image', 1));
+
+            if ($icon) {
+                $host['icon'] = './img/media/' . $icon;
+            }
+        }
+
+        return $host;
+    }
+
+    /**
     * get clusters id
     *
     * @param array $clustersName list of clusters
@@ -233,5 +247,170 @@ class ccm
         }
 
         return $clustersId;
+    }
+
+    /**
+    * Get cluster groups configuration
+    *
+    * @return array cluster group configuration
+    *
+    * throw \Exception if we can't reach Database
+    */
+    public function loadClusterGroups() {
+        $clusterGroups = $this->_getClusterGroups();
+
+        if (!$clusterGroups) {
+            return "no cluster group found";
+        }
+
+        $i = 0;
+        foreach ($clusterGroups as $clusterGroup) {
+            $clusterGroupsConfiguration[$i] = [
+                'cluster_group_id' => $clusterGroup['cluster_group_id'],
+                'cluster_group_name' => $clusterGroup['cluster_group_name'],
+                'statusCalculation' => [
+                    'inherit_downtime' => $clusterGroup['inherit_downtime'],
+                    'inherit_ack' => $clusterGroup['inherit_ack'],
+                    'ignore_services' => $clusterGroup['ignore_services']
+                ]
+            ];
+
+            $j = 0;
+            $clusters = $this->_getClustersConfiguration(array($clusterGroup['cluster_group_id']));
+            foreach ($clusters as $cluster) {
+                $clusterGroupsConfiguration[$i]['clusters'][$j] = $cluster;
+                $hosts = $this->_getClustersHosts(array($cluster['cluster_id']));
+                $clusterGroupsConfiguration[$i]['clusters'][$j]['hosts'] = $hosts;
+                $j++;
+            }
+            $i++;
+        }
+
+        return $clusterGroupsConfiguration;
+    }
+
+    /**
+    * get list of cluster groups
+    *
+    * @return array $clusterGroup list of cluster groups
+    *
+    * throw \Exception if we can't reach database
+    */
+    protected function _getClusterGroups() {
+        $query = "SELECT cluster_group_id, cluster_group_name, inherit_downtime, inherit_ack, ignore_services" .
+            " FROM mod_ccm_cluster_group";
+        $res = $this->db->prepare($query);
+
+        try {
+            $res->execute();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        while ($row = $res->fetch()) {
+            $clusterGroup[] = $row;
+        }
+
+        if (empty($clusterGroup)) {
+            return false;
+        }
+
+        return $clusterGroup;
+    }
+
+    /**
+    * get clusters configuration
+    *
+    * @param array $clusterGroupsId id of cluster group, default = null
+    *
+    * @return array $clustersConfiguration the wanted clusters configuration
+    *
+    * throw \Exception if we can't reach the database
+    */
+    protected function _getClustersConfiguration($clusterGroupsId = null) {
+        if (is_array($clusterGroupsId) && !empty($clusterGroupsId)) {
+            foreach ($clusterGroupsId as $id) {
+                $idList[] = ':pdo_' . $id;
+                $mainQueryParameters[] = [
+                    'parameter' => ':pdo_' . $id,
+                    'value' => (int)$id,
+                    'type' => PDO::PARAM_INT
+                ];
+            }
+        }
+
+        $query = "SELECT cluster_id, cluster_name, cluster_group_id, warning_threshold, critical_threshold," .
+        " cluster_type_id FROM mod_ccm_cluster";
+        if (is_array($clusterGroupsId) && !empty($clusterGroupsId)) {
+            $query .= " WHERE cluster_group_id IN (" . implode(', ', $idList) . ")";
+        }
+
+        $res = $this->db->prepare($query);
+
+        if (is_array($clusterGroupsId) && !empty($clusterGroupsId)) {
+            foreach ($mainQueryParameters as $param) {
+                $res->bindValue($param['parameter'], $param['value'], $param['type']);
+            }
+        }
+
+        try {
+            $res->execute();
+        } catch (\Exception $e) {;
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        while ($row = $res->fetch()) {
+            $clustersConfiguration[] = $row;
+        }
+
+        return $clustersConfiguration;
+    }
+
+    /**
+    * get hosts link to cluster
+    *
+    * @param array $clustersId list of cluster, default null
+    *
+    * @return array $hosts list of hosts
+    *
+    * @throw \Exception if we can't reach database
+    */
+    protected function _getClustersHosts($clustersId = null) {
+        if (is_array($clustersId) && !empty($clustersId)) {
+            foreach ($clustersId as $id) {
+                $idList[] = ':pdo_' . $id;
+                $mainQueryParameters[] = [
+                    'parameter' => ':pdo_' . $id,
+                    'value' => (int)$id,
+                    'type' => PDO::PARAM_INT
+                ];
+            }
+        }
+
+        $query = "SELECT host_id, host_name, host_alias, host_address, host_comment FROM host" .
+            " WHERE host_register='1' AND host_id IN (SELECT host_id FROM mod_ccm_cluster_host_relation";
+        if (is_array($clustersId) && !empty($clustersId)) {
+            $query .= " WHERE cluster_id IN (" . implode(', ', $idList) . ")";
+        }
+        $query .= ")";
+        $res = $this->db->prepare($query);
+
+        if (is_array($clustersId) && !empty($clustersId)) {
+            foreach ($mainQueryParameters as $param) {
+                $res->bindValue($param['parameter'], $param['value'], $param['type']);
+            }
+        }
+
+        try {
+            $res->execute();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        while ($row = $res->fetch()) {
+            $hosts[] = $this->_associateHostWithIcon($row);
+        }
+
+        return $hosts;
     }
 }

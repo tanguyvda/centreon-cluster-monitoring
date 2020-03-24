@@ -1,4 +1,5 @@
 $(document).ready(function () {
+  loadClusterGroups();
   $(document).on('click', function (e) {
     // remove class selectedItem if click outside of the host list. Because of margin/padding it is much more intuitive
     // to not remove the selectedItem class if we click somewhere on the whole list. To unselect something from the list
@@ -306,25 +307,30 @@ function htmlUnescape (str) {
 }
 
 function createClusterGroup () {
+
   const clusterGroupName = $('#ccm-cluster_group_form_group_name').val();
   const inheritAck = ($('#ccm-inherit_ack').is(':checked')) ? true : false;
   const inheritDt = ($('#ccm-inherit_dt').is(':checked')) ? true : false;
-  const statusCalculationMethod = ($('#ccm-status_calculation_method').is(':checked')) ? 'host' : 'service';
+  const statusCalculationMethod = ($('#ccm-status_calculation_method').is(':checked')) ? true : false;
   const clusterName = $('#ccm-cluster_group_form_cluster_name').val();
   const warningThreshold = $('#ccm-cluster_group_form_cluster_wthreshold').val();
   const criticalThreshold = $('#ccm-cluster_group_form_cluster_cthreshold').val();
 
+  if (testWhiteSpace(clusterGroupName) || testWhiteSpace(clusterName)) {
+    return toastError("You can't have white space in your cluster group name or your cluster name");
+  }
+
   const clusterGroupConfiguration = {
-    clusterGroupName: clusterGroupName,
+    cluster_group_name: clusterGroupName,
     statusCalculation: {
-      inheritDt: inheritDt,
-      inheritAck: inheritAck,
-      statusCalculationMethod: statusCalculationMethod
+      inherit_downtime: inheritDt,
+      inherit_ack: inheritAck,
+      ignore_services: statusCalculationMethod
     },
     clusters: [{
-      name: clusterName,
-      warningThreshold: warningThreshold,
-      criticalThreshold: criticalThreshold,
+      cluster_name: clusterName,
+      warning_threshold: warningThreshold,
+      critical_threshold: criticalThreshold,
       hosts: []
     }]
   };
@@ -350,7 +356,7 @@ function saveClusterGroup (conf) {
       if (data) {
         $('#ccm-close_modal')[0].click();
         console.log('on close');
-        displayNewClusterGroup(conf);
+        displayClusterGroup(conf);
       } else {
         console.log('not good');
       }
@@ -361,41 +367,41 @@ function saveClusterGroup (conf) {
   });
 }
 
-function displayNewClusterGroup (conf) {
-  let hostList = '';
-  $.each(conf.clusters[0].hosts, function () {
-    console.log(hostList);
-    hostList += '<tr><td>' + this.host_name + '</td></tr>';
-  });
-  const card = '<div class="col s12 m6 l6 xl3">' +
-    '<div class="card blue-grey darken-1">' +
-      '<div class="card-content white-text">' +
-        '<span class="card-title">' + conf.clusterGroupName + '</span>' +
-        '<ul id="ccm-cluster_group_' + conf.clusterGroupName + '" class="collapsible">' +
-          '<li>' +
-            '<div class="collapsible-header" style="color: grey;">' + conf.clusters[0].name + '</div>' +
-            '<div class="collapsible-body">' +
-              '<table>' +
-                '<thead>' +
-                  '<tr>' +
-                    '<th>Host name</th>' +
-                  '</tr>' +
-                '</thead>' +
-                '<tbody>' + hostList + '</tbody>' +
-              '</table>' +
-            '</div>' +
-          '</li>' +
-        '</ul>' +
-      '</div>' +
-      '<div class="card-action">' +
-        '<a href="#">SAVE</a>' +
-      '</div>' +
-    '</div>' +
-  '</div>';
-  $(card).insertAfter('#ccm-drop_cluster_group');
-  buildCollapsible('ccm-cluster_group_' + conf.clusterGroupName);
-
-}
+// function displayNewClusterGroup (conf) {
+//   let hostList = '';
+//   $.each(conf.clusters[0].hosts, function () {
+//     console.log(hostList);
+//     hostList += '<tr><td>' + this.host_name + '</td></tr>';
+//   });
+//   const card = '<div class="col s12 m6 l6 xl3 ccm-flexbox_card">' +
+//     '<div class="card blue-grey darken-1">' +
+//       '<div class="card-content white-text">' +
+//         '<span class="card-title">' + conf.cluster_group_name + '</span>' +
+//         '<ul id="ccm-cluster_group_' + conf.cluster_group_name + '" class="collapsible">' +
+//           '<li>' +
+//             '<div class="collapsible-header" style="color: grey;">' + conf.clusters[0].cluster_name + '</div>' +
+//             '<div class="collapsible-body">' +
+//               '<table>' +
+//                 '<thead>' +
+//                   '<tr>' +
+//                     '<th>Host name</th>' +
+//                   '</tr>' +
+//                 '</thead>' +
+//                 '<tbody>' + hostList + '</tbody>' +
+//               '</table>' +
+//             '</div>' +
+//           '</li>' +
+//         '</ul>' +
+//       '</div>' +
+//       '<div class="card-action">' +
+//         '<a href="#">SAVE</a>' +
+//       '</div>' +
+//     '</div>' +
+//   '</div>';
+//   $(card).insertAfter('#ccm-drop_cluster_group');
+//   buildCollapsible('ccm-cluster_group_' + conf.cluster_group_name);
+//
+// }
 
 function triggerModal () {
   $('#ccm-drop_cluster_group').attr('href', '#ccm-modal_drop_cluster_group');
@@ -404,11 +410,81 @@ function triggerModal () {
   $('#ccm-drop_cluster_group').removeClass('modal-trigger')
 }
 
-function toastError(error) {
+function toastError (error) {
   const toast = '<span>' + error + '</span><button class="btn-flat toast-action" onClick="dismissToast()">Dismiss</button>';
   M.toast({html: toast});
 }
 
-function dismissToast() {
+function dismissToast () {
   M.Toast.dismissAll();
+}
+
+function loadClusterGroups () {
+  $.ajax({
+    url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify({
+      ccm_method: 'loadClusterGroups',
+    }),
+    success: function (data) {
+      if (data) {
+        $.each(data, function () {
+          displayClusterGroup(this);
+        });
+      } else {
+        console.log('not good');
+      }
+    },
+    error: function (error) {
+      toastError(error.responseText);
+    }
+  });
+}
+
+function displayClusterGroup (conf) {
+  let clusterHtml = '';
+  let hostHtml = '';
+  $.each(conf.clusters, function () {
+
+    $.each(this.hosts, function () {
+      hostHtml += '<tr><td>' + this.host_name + '</td></tr>';
+    });
+    clusterHtml += '<li>' +
+      '<div class="collapsible-header" style="color: grey;">' + this.cluster_name + '</div>' +
+      '<div class="collapsible-body">' +
+        '<table>' +
+          '<thead>' +
+            '<tr>' +
+              '<th>Host name</th>' +
+            '</tr>' +
+          '</thead>' +
+          '<tbody>' + hostHtml + '</tbody>' +
+        '</table>' +
+      '</div>' +
+    '</li>';
+  });
+
+  const card = '<div class="col s12 m6 l6 xl3 ccm-flexbox_card">' +
+    '<div class="card blue-grey darken-1">' +
+      '<div class="card-content white-text">' +
+        '<span class="card-title card-tooltipped-' + conf.cluster_group_name + '" data-position="top" data-tooltip="' +
+          conf.cluster_group_name + '">' + conf.cluster_group_name + '</span>' +
+        '<ul id="ccm-cluster_group_' + conf.cluster_group_name + '" class="collapsible">' +
+          clusterHtml +
+        '</ul>' +
+      '</div>' +
+      '<div class="card-action">' +
+        '<a href="#">SAVE</a>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  $(card).insertAfter('#ccm-drop_cluster_group');
+  buildTooltip('.card-tooltipped-' + conf.cluster_group_name);
+  buildCollapsible('ccm-cluster_group_' + conf.cluster_group_name);
+}
+
+function testWhiteSpace (string) {
+  return /\s/g.test(string);
 }
