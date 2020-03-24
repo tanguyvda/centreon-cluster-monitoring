@@ -22,7 +22,7 @@
     </div>
     <div class="col s8 ccm-cluster_group_wrapper">
       <div id="ccm-drop_cluster_group" class="col s12 m6 l6 xl3 ccm-drop_cluster_group valign-wrapper">
-        <div class="center-align">DRAG AND DROP YOU HOSTS TO CREATE A CLUSTER GROUP</div>
+        <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
       </div>
     </div>
   </div>
