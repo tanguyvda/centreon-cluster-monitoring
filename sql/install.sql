@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `mod_ccm_cluster_group` (
   `cluster_group_id` INT(11) NOT NULL AUTO_INCREMENT,
   `cluster_group_name` VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`cluster_group_id`),
-  KEY `cluster_group_name` (`cluster_group_name`)
+  UNIQUE KEY `cluster_group_name` (`cluster_group_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
