@@ -19,7 +19,6 @@ $(document).ready(function () {
     }),
     success: function (data) {
       if (data) {
-        var tanguyData = data;
         for (const key in data) {
           buildHostList(data, key);
         }
@@ -366,42 +365,6 @@ function saveClusterGroup (conf) {
     }
   });
 }
-
-// function displayNewClusterGroup (conf) {
-//   let hostList = '';
-//   $.each(conf.clusters[0].hosts, function () {
-//     console.log(hostList);
-//     hostList += '<tr><td>' + this.host_name + '</td></tr>';
-//   });
-//   const card = '<div class="col s12 m6 l6 xl3 ccm-flexbox_card">' +
-//     '<div class="card blue-grey darken-1">' +
-//       '<div class="card-content white-text">' +
-//         '<span class="card-title">' + conf.cluster_group_name + '</span>' +
-//         '<ul id="ccm-cluster_group_' + conf.cluster_group_name + '" class="collapsible">' +
-//           '<li>' +
-//             '<div class="collapsible-header" style="color: grey;">' + conf.clusters[0].cluster_name + '</div>' +
-//             '<div class="collapsible-body">' +
-//               '<table>' +
-//                 '<thead>' +
-//                   '<tr>' +
-//                     '<th>Host name</th>' +
-//                   '</tr>' +
-//                 '</thead>' +
-//                 '<tbody>' + hostList + '</tbody>' +
-//               '</table>' +
-//             '</div>' +
-//           '</li>' +
-//         '</ul>' +
-//       '</div>' +
-//       '<div class="card-action">' +
-//         '<a href="#">SAVE</a>' +
-//       '</div>' +
-//     '</div>' +
-//   '</div>';
-//   $(card).insertAfter('#ccm-drop_cluster_group');
-//   buildCollapsible('ccm-cluster_group_' + conf.cluster_group_name);
-//
-// }
 
 function triggerModal () {
   $('#ccm-drop_cluster_group').attr('href', '#ccm-modal_drop_cluster_group');
