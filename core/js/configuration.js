@@ -1,3 +1,5 @@
+var clusterGroupAction = {};
+
 $(document).ready(function () {
   loadClusterGroups();
   $(document).on('click', function (e) {
@@ -409,18 +411,28 @@ function loadClusterGroups () {
 function displayClusterGroup (conf) {
   let clusterHtml = '';
   let hostHtml = '';
+  const clusterGroupId = conf.cluster_group_id;
   $.each(conf.clusters, function () {
-
+    const clusterId = this.cluster_id;
     $.each(this.hosts, function () {
-      hostHtml += '<tr><td>' + this.host_name + '</td></tr>';
+      hostHtml += '<tr data-cluster_group_id="' + clusterGroupId + '" data-cluster_id="' + clusterId +
+        '" data-host_id="' + this.host_id + '"><td>' + this.host_name + '</td>' +
+        '<td>' +
+          '<i class="material-icons" onClick="removeHost(this, ' +
+          clusterGroupId + ',' + clusterId + ', ' + this.host_id + ')">highlight_off</i>' +
+        '</td></tr>';
     });
     clusterHtml += '<li>' +
-      '<div class="collapsible-header" style="color: grey;">' + this.cluster_name + '</div>' +
+      '<div class="collapsible-header" style="color: grey;" data-cluster_group_id="' + clusterGroupId +
+        '" data-cluster_id="' + this.cluster_id + '">' + this.cluster_name +
+        '<i class="material-icons" onClick="removeCluster(this, ' + clusterGroupId + ',' + clusterId +
+          ')">highlight_off</i></div>' +
       '<div class="collapsible-body">' +
         '<table>' +
           '<thead>' +
             '<tr>' +
               '<th>Host name</th>' +
+              '<th>Remove</th>' +
             '</tr>' +
           '</thead>' +
           '<tbody>' + hostHtml + '</tbody>' +
@@ -429,7 +441,7 @@ function displayClusterGroup (conf) {
     '</li>';
   });
 
-  const card = '<div class="col s12 m6 l6 xl3 ccm-flexbox_card">' +
+  const card = '<div class="col s12 m6 l6 xl3 ccm-flexbox_card" data-cluster_group_id="' + clusterGroupId + '">' +
     '<div class="card blue-grey darken-1">' +
       '<div class="card-content white-text">' +
         '<span class="card-title card-tooltipped-' + conf.cluster_group_name + '" data-position="top" data-tooltip="' +
@@ -439,15 +451,89 @@ function displayClusterGroup (conf) {
         '</ul>' +
       '</div>' +
       '<div class="card-action">' +
-        '<a href="#">SAVE</a>' +
+        '<a href="#" onClick="updateClusterGroup(' + clusterGroupId + ')">SAVE</a>' +
       '</div>' +
     '</div>' +
   '</div>';
   $(card).insertAfter('#ccm-drop_cluster_group');
   buildTooltip('.card-tooltipped-' + conf.cluster_group_name);
   buildCollapsible('ccm-cluster_group_' + conf.cluster_group_name);
+
+  clusterGroupAction[clusterGroupId] = {
+    delete: {
+      clusters: []
+    },
+    add: {}
+  };
 }
 
 function testWhiteSpace (string) {
   return /\s/g.test(string);
 }
+
+function removeHost (el, clusterGroupId, clusterId, hostId) {
+  $(el).closest('tr').remove();
+  if (!(clusterId in clusterGroupAction[clusterGroupId].delete)) {
+    clusterGroupAction[clusterGroupId].delete[clusterId] = {};
+  }
+  if (!('hosts' in clusterGroupAction[clusterGroupId].delete[clusterId])) {
+    clusterGroupAction[clusterGroupId].delete[clusterId].hosts = [];
+  }
+  clusterGroupAction[clusterGroupId].delete[clusterId].hosts.push(hostId);
+  console.log(clusterGroupAction);
+}
+
+function removeCluster (el, clusterGroupId, clusterId) {
+  $(el.closest('li').remove());
+  clusterGroupAction[clusterGroupId].delete.clusters.push(clusterId);
+}
+
+function updateClusterGroup (clusterGroupId) {
+  console.log('before');
+  console.log(clusterGroupAction);
+  $.ajax({
+    url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify({
+      ccm_method: 'updateClusterGroup',
+      actions: clusterGroupAction[clusterGroupId]
+    }),
+    success: function (data) {
+      if (data) {
+        clusterGroupAction[clusterGroupId] = {
+          delete: {
+            clusters: []
+          },
+          add: {}
+        };
+        console.log('after');
+        console.log(clusterGroupAction);
+      } else {
+        console.log('not good');
+      }
+    },
+    error: function (error) {
+      toastError(error.responseText);
+    }
+  });
+}
+//
+// {
+//    'cluster_group_id': {
+//     'delete': {
+//       'clusters': [12,2,36],
+//       '12': {
+//         'hosts': [13,14,15,16]
+//       },
+//      '36': {
+//
+// }
+//     },
+//     'add': {
+//       'cluster_id': 13,
+//       'hosts_id': [118, 190, 132]
+//     }
+//   }
+// }

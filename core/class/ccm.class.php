@@ -413,4 +413,64 @@ class ccm
 
         return $hosts;
     }
+
+    public function updateClusterGroup($data) {
+        $delete = $data['actions']['delete'];
+        foreach ($delete as $key => $value) {
+            if ($key == 'clusters' && !empty($delete['clusters'])) {
+                foreach ($delete[$key] as $cluster) {
+                    $clusterId[] = ':pdo_' . $cluster;
+                    $mainQueryParameters[] = [
+                        'parameter' => ':pdo_' . $cluster,
+                        'value' => (int)$cluster,
+                        'type' => PDO::PARAM_INT
+                    ];
+                }
+                $query = "DELETE FROM mod_ccm_cluster WHERE cluster_id IN (" . implode(', ', $clusterId) . ")";
+                $res = $this->db->prepare($query);
+
+                foreach ($mainQueryParameters as $param) {
+                    $res->bindValue($param['parameter'], $param['value'], $param['type']);
+                }
+
+                unset($mainQueryParameters);
+
+                try {
+                    $res->execute();
+                } catch (\Exception $e) {
+                    throw new \Exception($e->getMessage(), $e->getCode());
+                }
+
+            } else if ($key != 'clusters') {
+                if (!in_array($key, $delete['clusters'])) {
+                    foreach ($delete[$key]['hosts'] as $host) {
+                        $hostId[] = ':pdo_' . $host;
+                        $mainQueryParameters[] = [
+                            'parameter' => ':pdo_' . $host,
+                            'value' => (int)$host,
+                            'type' => PDO::PARAM_INT
+                        ];
+                    }
+                    $query = "DELETE FROM mod_ccm_cluster_host_relation WHERE cluster_id = :pdo_" . $key .
+                    " AND host_id IN (" . implode(', ', $hostId) . ")";
+                    $res = $this->db->prepare($query);
+
+                    foreach ($mainQueryParameters as $param) {
+                        $res->bindValue($param['parameter'], $param['value'], $param['type']);
+                    }
+                    $res->bindValue(':pdo_' . $key, (int)$key, PDO::PARAM_INT);
+
+                    unset($mainQueryParameters);
+
+                    try {
+                        $res->execute();
+                    } catch (\Exception $e) {
+                        throw new \Exception($e->getMessage(), $e->getCode());
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
 }
