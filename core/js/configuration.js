@@ -192,8 +192,8 @@ function enableDragula () {
     }
   }).on('over', function (el, container, source) {
     // hovering over cluster group ?
-    var isOverTarget = $(container).attr('id') === 'ccm-drop_cluster_group';
-    if (isOverTarget) {
+    var isOverCcmClusterGroup = $(container).attr('id') === 'ccm-drop_cluster_group';
+    if (isOverCcmClusterGroup) {
       $('#ccm-drop_cluster_group').css({"border-color": "#000", "color": "#000"});
     }
     selectedItems.css('display', 'none');
@@ -204,6 +204,7 @@ function enableDragula () {
     // flag if dropped on cluster group
     var isCcmClusterGroup = target.attr('id') === 'ccm-drop_cluster_group';
     var isCcmCluster = target.hasClass('ccm-droppable_list');
+    // var isCcmClusterChild = isCcmCluster.find('*');
     $('#ccm-drop_cluster_group').addClass('modal-trigger');
     // are we dropping multiple items
     if (hasMultiple) {
@@ -244,7 +245,7 @@ function enableDragula () {
     }
   }).on('cancel', function (el, container, source) {
   }).on('out', function (el, container) {
-    $('#ccm-drop_cluster_group').css({"border-color": "#ededed", "color": "#ededed"});
+    $('#ccm-drop_cluster_group').css({'border-color': '#ededed', 'color': '#ededed'});
   }).on('moves', function (el, container, handle) {
     // for non draggable line breaks
     // return !$(el).is('hr');
@@ -533,9 +534,10 @@ function updateClusterGroup (clusterGroupId) {
 }
 
 function addHostToCluster(hostInformation, cluster) {
-  const clusterId = $(cluster[0]).children().eq(1).data('cluster_id')
-  const clusterGroupId = $(cluster[0]).children().eq(1).data('cluster_group_id')
-  const tbody = $(cluster[0]).children().eq(2).children().first().children().eq(1);
+  const collapsibleHeader = $(cluster[0]).find('div.collapsible-header');
+  const clusterId = $(collapsibleHeader).data('cluster_id');
+  const clusterGroupId = $(collapsibleHeader).data('cluster_group_id');
+  const tbody = $(cluster[0]).find('div.collapsible-body').children().first().children().eq(1);
   const keys = Object.keys(hostInformation);
   for (const key of keys) {
     if (checkHostInCluster(hostInformation[key], tbody)) {
@@ -547,7 +549,6 @@ function addHostToCluster(hostInformation, cluster) {
       '<i class="material-icons" onClick="removeHost(this, ' +
       clusterGroupId + ',' + clusterId + ', ' + hostInformation[key].host_id + ')">highlight_off</i>' +
       '</td></tr>');
-
       if (!(clusterId in clusterGroupAction[clusterGroupId].add)) {
         clusterGroupAction[clusterGroupId].add[clusterId] = {};
       }

@@ -87,9 +87,14 @@ html, body {
   font-size: 30px;
 }
 
+li > .gu-transit {
+  display: none;
+}
 #ccm-drop_cluster_group > .gu-transit {
   display: none;
 }
+
+
 .selectedItem {
   background-color: blue;
 }
