@@ -219,7 +219,7 @@ function enableDragula () {
           buildCollapsibleHostList(hostInformation);
           triggerModal();
         } else if (isCcmCluster) {
-          console.log('on drop sur la liste');
+          addHostToCluster(hostInformation, target);
         }
         // remove the remaining items from the dom
         $('.selectedItem').removeClass('.selectedItem');
