@@ -125,18 +125,25 @@ function buildCollapsibleHostList (hostInformation) {
 function enableDragula () {
   var ccmSource = $('#ccm-host_list');
   var ccmTarget = $('#ccm-drop_cluster_group');
+  var ccmList = $('.ccm-droppable_list');
   var hasMultiple = false;
   var shiftIsPressed;
   var selectedItems;
   var mirrorContainer;
 
-  var drake = dragula([ccmSource[0], ccmTarget[0]], {
+  const dragulaOptions = {
+    invalid: function (el, handle) {
+      if ($(el).hasClass('ccm-droppable_list')) {
+        return true;
+      }
+    },
     revertOnSpill: true,
     copy: true
-  });
+  };
+
+  var drake = dragula([ccmSource[0], ccmTarget[0], ccmList[0]], dragulaOptions);
 
   drake.on('drag', (el) => {
-    console.log('drag');
   }).on('cloned', (clone, original, type) => {
     // dragging from host list to cluster group
     var isFromSource = $(original).parent().attr('id') === 'ccm-host_list';
@@ -195,19 +202,25 @@ function enableDragula () {
     target = $(target);
     const hostInformation = [];
     // flag if dropped on cluster group
-    var isTarget = target.attr('id') === 'ccm-drop_cluster_group';
+    var isCcmClusterGroup = target.attr('id') === 'ccm-drop_cluster_group';
+    var isCcmCluster = target.hasClass('ccm-droppable_list');
     $('#ccm-drop_cluster_group').addClass('modal-trigger');
     // are we dropping multiple items
     if (hasMultiple) {
       // are we adding items to cluster group
-      if (isTarget) {
+      if (isCcmClusterGroup || isCcmCluster) {
         // get the default, single dropped item
         // var droppedItem = target.find('.selectedItem').first();
         $(mirrorContainer.children()).each(function () {
           hostInformation[$(this).attr('id')] = $(this).data('json');
         });
-        buildCollapsibleHostList(hostInformation);
-        triggerModal();
+
+        if (isCcmClusterGroup) {
+          buildCollapsibleHostList(hostInformation);
+          triggerModal();
+        } else if (isCcmCluster) {
+          console.log('on drop sur la liste');
+        }
         // remove the remaining items from the dom
         $('.selectedItem').removeClass('.selectedItem');
         // clear flag
@@ -218,14 +231,18 @@ function enableDragula () {
       }
     } else {
       hostInformation[$(mirrorContainer[0]).attr('id')] = $(mirrorContainer[0]).data('json');
-      buildCollapsibleHostList(hostInformation);
-      triggerModal();
+      if (isCcmClusterGroup) {
+        buildCollapsibleHostList(hostInformation);
+        triggerModal();
+        ccmTarget.children().removeClass('selectedItem');
+      } else if (isCcmCluster) {
+        addHostToCluster(hostInformation, target);
+        ccmList.children().removeClass('selectedItem');
+      }
       // if only one item has been selected, remove the selected item class
-      ccmTarget.children().removeClass('selectedItem');
       drake.cancel(true);
     }
   }).on('cancel', function (el, container, source) {
-    console.log('cancel');
   }).on('out', function (el, container) {
     $('#ccm-drop_cluster_group').css({"border-color": "#ededed", "color": "#ededed"});
   }).on('moves', function (el, container, handle) {
@@ -245,14 +262,15 @@ function enableDragula () {
   // sets a global flag of whether the shift key is pressed
   function bindShiftPressEvent () {
     // set flag on
-    $(document).keydown(function(event){
-      if(event.shiftKey)
-          shiftIsPressed = true;
+    $(document).keydown(function (event) {
+      if (event.shiftKey) {
+        shiftIsPressed = true;
+      }
     });
 
     // set flag off
-    $(document).keyup(function(){
-        shiftIsPressed = false;
+    $(document).keyup(function () {
+      shiftIsPressed = false;
     });
   }
 
@@ -356,7 +374,6 @@ function saveClusterGroup (conf) {
     success: function (data) {
       if (data) {
         $('#ccm-close_modal')[0].click();
-        console.log('on close');
         displayClusterGroup(conf);
       } else {
         console.log('not good');
@@ -422,7 +439,7 @@ function displayClusterGroup (conf) {
           clusterGroupId + ',' + clusterId + ', ' + this.host_id + ')">highlight_off</i>' +
         '</td></tr>';
     });
-    clusterHtml += '<li>' +
+    clusterHtml += '<li class="ccm-droppable_list">' +
       '<div class="collapsible-header" style="color: grey;" data-cluster_group_id="' + clusterGroupId +
         '" data-cluster_id="' + this.cluster_id + '">' + this.cluster_name +
         '<i class="material-icons" onClick="removeCluster(this, ' + clusterGroupId + ',' + clusterId +
@@ -480,7 +497,6 @@ function removeHost (el, clusterGroupId, clusterId, hostId) {
     clusterGroupAction[clusterGroupId].delete[clusterId].hosts = [];
   }
   clusterGroupAction[clusterGroupId].delete[clusterId].hosts.push(hostId);
-  console.log(clusterGroupAction);
 }
 
 function removeCluster (el, clusterGroupId, clusterId) {
@@ -489,8 +505,6 @@ function removeCluster (el, clusterGroupId, clusterId) {
 }
 
 function updateClusterGroup (clusterGroupId) {
-  console.log('before');
-  console.log(clusterGroupAction);
   $.ajax({
     url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
     type: 'POST',
@@ -508,8 +522,6 @@ function updateClusterGroup (clusterGroupId) {
           },
           add: {}
         };
-        console.log('after');
-        console.log(clusterGroupAction);
       } else {
         console.log('not good');
       }
@@ -519,21 +531,62 @@ function updateClusterGroup (clusterGroupId) {
     }
   });
 }
-//
+
+function addHostToCluster(hostInformation, cluster) {
+  const clusterId = $(cluster[0]).children().eq(1).data('cluster_id')
+  const clusterGroupId = $(cluster[0]).children().eq(1).data('cluster_group_id')
+  const tbody = $(cluster[0]).children().eq(2).children().first().children().eq(1);
+  const keys = Object.keys(hostInformation);
+  for (const key of keys) {
+    if (checkHostInCluster(hostInformation[key], tbody)) {
+      toastError(hostInformation[key].host_name + ' is already in the cluster');
+    } else {
+      $(tbody).append('<tr data-cluster_group_id="' + clusterGroupId + '" data-cluster_id="' + clusterId +
+      '" data-host_id="' + hostInformation[key].host_id + '"><td>' + hostInformation[key].host_name + '</td>' +
+      '<td>' +
+      '<i class="material-icons" onClick="removeHost(this, ' +
+      clusterGroupId + ',' + clusterId + ', ' + hostInformation[key].host_id + ')">highlight_off</i>' +
+      '</td></tr>');
+
+      if (!(clusterId in clusterGroupAction[clusterGroupId].add)) {
+        clusterGroupAction[clusterGroupId].add[clusterId] = {};
+      }
+
+      if (!('hosts' in clusterGroupAction[clusterGroupId].add[clusterId])) {
+        clusterGroupAction[clusterGroupId].add[clusterId].hosts = [];
+      }
+      clusterGroupAction[clusterGroupId].add[clusterId].hosts.push(hostInformation[key].host_id);
+    }
+  }
+
+  console.log(clusterGroupAction);
+}
+
+function checkHostInCluster (hostInformation, tbody) {
+  let exist = false;
+  $(tbody).children().each(function () {
+    if ($(this).data('host_id') === Number(hostInformation.host_id)) {
+      exist = true;
+    }
+  });
+  return exist;
+}
+
 // {
-//    'cluster_group_id': {
-//     'delete': {
-//       'clusters': [12,2,36],
-//       '12': {
-//         'hosts': [13,14,15,16]
+//    cluster_group_id: {
+//     delete: {
+//       clusters: [12,2,36],
+//       12: {
+//         hosts: [13,14,15,16]
 //       },
-//      '36': {
-//
-// }
+//      36: {
+//        hosts: [13,14,15,16]
+//      }
 //     },
-//     'add': {
-//       'cluster_id': 13,
-//       'hosts_id': [118, 190, 132]
+//     add: {
+//       11: {
+//           hosts: [48, 154, 454]
+//         }
 //     }
 //   }
 // }

@@ -416,6 +416,7 @@ class ccm
 
     public function updateClusterGroup($data) {
         $delete = $data['actions']['delete'];
+        $add = $data['actions']['add'];
         foreach ($delete as $key => $value) {
             if ($key == 'clusters' && !empty($delete['clusters'])) {
                 foreach ($delete[$key] as $cluster) {
@@ -468,6 +469,34 @@ class ccm
                         throw new \Exception($e->getMessage(), $e->getCode());
                     }
                 }
+            }
+        }
+        
+        foreach ($add as $key => $value) {
+
+            $query = 'INSERT INTO mod_ccm_cluster_host_relation (`cluster_id`, `host_id`) VALUES';
+            foreach ($add[$key]['hosts'] as $host) {
+                $mainQueryParameters[] = [
+                    'parameter' => ':pdo_' . $host,
+                    'value' => (int)$host,
+                    'type' => PDO::PARAM_INT
+                ];
+
+                $query .= " (:id_" . $key . ", :pdo_" . $host . "),";
+            }
+            $query = rtrim($query, ',');
+            $res = $this->db->prepare($query);
+            foreach ($mainQueryParameters as $param) {
+                $res->bindValue($param['parameter'], $param['value'], $param['type']);
+            }
+            $res->bindValue(':id_' . $key, (int)$key, PDO::PARAM_INT);
+
+            unset($mainQueryParameters);
+
+            try {
+                $res->execute();
+            } catch (\Exception $e) {
+                throw new \Exception($e->getMessage(), $e->getCode());
             }
         }
 
