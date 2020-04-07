@@ -8,6 +8,9 @@
 </head>
 <body>
 <div class="row">
+  <script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/materialize.min.js"></script>
+  <script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/dragula.min.js"></script>
+  <script type="module" src="./modules/centreon-cluster-monitoring/core/js/configuration.js"></script>
   <div class="input-field ccm-search_host_list col s3">
     <i class="material-icons prefix">search</i>
     <input id="ccm-search_host" type="text" class="validate ccm-search_host">
@@ -88,12 +91,9 @@
     </div>
     <div class="modal-footer">
       <a id="ccm-close_modal" href="#!" class="modal-close" style="display: none;"></a>
-      <a href="#!" class="waves-effect waves-green btn-flat" onclick="createClusterGroup()">Agree</a>
+      <a id="ccm-save_cluster_group_button" href="#!" class="waves-effect waves-green btn-flat" onclick="createClusterGroupTest()">Agree</a>
     </div>
   </div>
 
 <body>
-<script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/materialize.min.js"></script>
-<script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/dragula.min.js"></script>
-<script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/configuration.js"></script>
 </html>

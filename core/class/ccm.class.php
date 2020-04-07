@@ -1,5 +1,4 @@
 <?php
-
 require_once _CENTREON_PATH_ . '/www/class/centreonDB.class.php';
 require_once _CENTREON_PATH_ . '/www/class/centreonHost.class.php';
 require_once _CENTREON_PATH_ . '/www/class/centreonMedia.class.php';
@@ -92,11 +91,11 @@ class ccm
         $criticalThreshold = $conf['clusters'][0]['critical_threshold'];
 
         $query = "INSERT INTO mod_ccm_cluster_group (`cluster_group_name`, `inherit_downtime`, `inherit_ack`" .
-            ", `ignore_services`) VALUE (:pdo_" . $clusterGroupName . ", " . $inheritDt . ", " . $inheritAck .
+            ", `ignore_services`) VALUE (:pdo_clusterGroupName, " . $inheritDt . ", " . $inheritAck .
             ", " . $ignoreServices . ")";
-
         $res = $this->db->prepare($query);
-        $res->bindValue(':pdo_' . $clusterGroupName, (string)$clusterGroupName, PDO::PARAM_STR);
+        $res->bindValue(':pdo_clusterGroupName', (string)$clusterGroupName, PDO::PARAM_STR);
+
         try {
             $res->execute();
         } catch (\Exception $e) {
@@ -108,27 +107,39 @@ class ccm
         }
 
         $pdoParams =  array(
-            $clusterGroupName => 'string',
-            $clusterName => 'string',
-            $warningThreshold => 'int',
-            $criticalThreshold => 'int'
+            'clusterGroupName' => array(
+                'type' => 'string',
+                'value' => $clusterGroupName
+            ),
+            'clusterName' => array (
+                'type' => 'string',
+                'value' => $clusterName
+            ),
+            'warningThreshold' => array(
+                'type' => 'int',
+                'value' => $warningThreshold
+            ),
+            'criticalThreshold' => array(
+                'type' => 'int',
+                'value' => $criticalThreshold
+            )
         );
 
         $query = "INSERT INTO mod_ccm_cluster (`cluster_name`,`cluster_group_id`,`warning_threshold`," .
             " `critical_threshold`) VALUE (" .
-            " :pdo_" . $clusterName . ", (SELECT cluster_group_id FROM mod_ccm_cluster_group" .
-            " WHERE `cluster_group_name` = :pdo_" . $clusterGroupName . "), :pdo_" . $warningThreshold .
-            ", :pdo_" . $criticalThreshold . ")";
+            " :pdo_clusterName, (SELECT cluster_group_id FROM mod_ccm_cluster_group" .
+            " WHERE `cluster_group_name` = :pdo_clusterGroupName), :pdo_warningThreshold, :pdo_criticalThreshold)";
 
-        foreach ($pdoParams as $key => $value) {
+        foreach ($pdoParams as $key => $param) {
             $mainQueryParameters[] = [
                 'parameter' => ':pdo_' . $key,
-                'value' => ($value == 'int' ? (int)$key : (string)$key),
-                'type' => ($value == 'int' ? PDO::PARAM_INT : PDO::PARAM_STR)
+                'value' => ($param['type'] == 'int' ? (int)$param['value'] : (string)$param['value']),
+                'type' => ($param['type'] == 'int' ? PDO::PARAM_INT : PDO::PARAM_STR)
             ];
         }
 
         $res = $this->db->prepare($query);
+
         foreach ($mainQueryParameters as $param) {
             $res->bindValue($param['parameter'], $param['value'], $param['type']);
         }
@@ -153,11 +164,14 @@ class ccm
                 'type' => PDO::PARAM_INT
             ];
         }
+
         $query = rtrim($query, ',');
         $res = $this->db->prepare($query);
+
         foreach ($mainQueryParameters as $param) {
             $res->bindValue($param['parameter'], $param['value'], $param['type']);
         }
+
         $res->execute();
 
         return true;
@@ -217,13 +231,15 @@ class ccm
     * throw \Exception if we can't reach database
     */
     public function getClustersId($clustersName) {
+        $i = 0;
         foreach ($clustersName as $name) {
-            $labels[] = ':pdo_' . $name;
+            $labels[] = ':pdo_name_' . $i;
             $mainQueryParameters[] = [
-                'parameter' => ':pdo_' . $name,
+                'parameter' => ':pdo_name_' . $i,
                 'value' => (string)$name,
                 'type' => PDO::PARAM_STR
             ];
+            $i++;
         }
 
         $query = "SELECT cluster_id, cluster_name FROM mod_ccm_cluster WHERE cluster_name IN (" . implode(',', $labels) . ")";
@@ -389,9 +405,11 @@ class ccm
 
         $query = "SELECT host_id, host_name, host_alias, host_address, host_comment FROM host" .
             " WHERE host_register='1' AND host_id IN (SELECT host_id FROM mod_ccm_cluster_host_relation";
+
         if (is_array($clustersId) && !empty($clustersId)) {
             $query .= " WHERE cluster_id IN (" . implode(', ', $idList) . ")";
         }
+
         $query .= ")";
         $res = $this->db->prepare($query);
 
@@ -419,6 +437,7 @@ class ccm
         $add = $data['actions']['add'];
         foreach ($delete as $key => $value) {
             if ($key == 'clusters' && !empty($delete['clusters'])) {
+
                 foreach ($delete[$key] as $cluster) {
                     $clusterId[] = ':pdo_' . $cluster;
                     $mainQueryParameters[] = [
@@ -452,6 +471,7 @@ class ccm
                             'type' => PDO::PARAM_INT
                         ];
                     }
+
                     $query = "DELETE FROM mod_ccm_cluster_host_relation WHERE cluster_id = :pdo_" . $key .
                     " AND host_id IN (" . implode(', ', $hostId) . ")";
                     $res = $this->db->prepare($query);
@@ -471,10 +491,10 @@ class ccm
                 }
             }
         }
-        
-        foreach ($add as $key => $value) {
 
+        foreach ($add as $key => $value) {
             $query = 'INSERT INTO mod_ccm_cluster_host_relation (`cluster_id`, `host_id`) VALUES';
+
             foreach ($add[$key]['hosts'] as $host) {
                 $mainQueryParameters[] = [
                     'parameter' => ':pdo_' . $host,
@@ -484,11 +504,14 @@ class ccm
 
                 $query .= " (:id_" . $key . ", :pdo_" . $host . "),";
             }
+
             $query = rtrim($query, ',');
             $res = $this->db->prepare($query);
+
             foreach ($mainQueryParameters as $param) {
                 $res->bindValue($param['parameter'], $param['value'], $param['type']);
             }
+
             $res->bindValue(':id_' . $key, (int)$key, PDO::PARAM_INT);
 
             unset($mainQueryParameters);
