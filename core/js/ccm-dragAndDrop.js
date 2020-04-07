@@ -1,38 +1,24 @@
 import CcmUtils from './ccm-utils.js';
 import CcmMaterial from './ccm-material.js';
-import CcmCluster from './ccm-cluster.js'
 
 /** @class CcmDragAndDrop handles the drag and drop of objects */
 export default class CcmDragAndDrop {
   /**
   * create an instance of CcmDragAndDrop
   *
-  * @param {element} ccmSource The source container that is going to be dragged
-  * @param {element} ccmTarget The target container on which we can drop the source
   * @param {object} options The options for dragula
-  * @param {string} targetType The type of drop area that is used
-  * @param {bool} init Should we initiate multi select using shift
+  * @param {object} cluster Instance of cluster class
   */
-  constructor (ccmSource, ccmTarget, options, targetType, init) {
-    // var this = this;
-    this.cluster = new CcmCluster();
-    this.material = new CcmMaterial();
-    this.ccmSource = ccmSource[0];
-    this.ccmTarget = ccmTarget[0];
-    this.draggable = dragula([this.ccmSource, this.ccmTarget], options);
+  constructor (options, cluster) {
     this.mirrorContainer = '';
     this.hasMultiple = false;
     this.selectedItems = '';
-
-    if (init) {
-      this.init();
-      this.drag();
-      this.cloned();
-    }
-    this['over' + targetType]();
-    this['drop' + targetType]();
-    this['out' + targetType]();
-    this.dragend();
+    this.draggable = '';
+    this.cluster = cluster;
+    this.options = options;
+    this.ccmSource = '';
+    this.shiftIsPressed = false;
+    this.material = new CcmMaterial();
   }
 
   drag () {
@@ -96,24 +82,27 @@ export default class CcmDragAndDrop {
     });
   }
 
-  dropClusterGroup () {
-    console.log('before draggable');
-    console.log(this);
+  overCluster () {
+    const self = this;
+    this.draggable.on('over', function (el, container, source) {
+      const isOverCluster = $(container).attr('id') === 'ccm-cluster_group_cluster-group-name';
+
+      if (isOverCluster) {
+        $('#ccm-cluster_group_cluster-group-name').css({ color: 'red' });
+      }
+    });
+  }
+
+  dropClusterGroup (targetId) {
     const self = this;
     this.draggable.on('drop', function (el, target, source, sibling) {
-      console.log('after draggable');
-      console.log(self);
       self.mirrorContainer = $('.gu-mirror').first();
-      // convert to jquery
-      target = $(target);
       const hostInformation = [];
-      // flag if dropped on cluster group
-      const isCcmClusterGroup = target.attr('id') === 'ccm-drop_cluster_group';
-      // are we dropping multiple items
-      if (self.hasMultiple) {
-        // are we adding items to cluster group
-        if (isCcmClusterGroup) {
+      const isCcmClusterGroup = $(target).attr('id') === targetId;
+      if (isCcmClusterGroup) {
+        if (self.hasMultiple) {
           $('#ccm-drop_cluster_group').addClass('modal-trigger');
+
           // get the default, single dropped item
           $(self.mirrorContainer.children()).each(function () {
             hostInformation[$(this).attr('id')] = $(this).data('json');
@@ -126,6 +115,7 @@ export default class CcmDragAndDrop {
             $('#ccm-cluster_creation_table_body')
               .append(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
           }
+
           self.material.triggerModal($('#ccm-drop_cluster_group'), '#ccm-modal_drop_cluster_group');
           // remove the remaining items from the dom
           $('.selectedItem').removeClass('.selectedItem');
@@ -133,23 +123,48 @@ export default class CcmDragAndDrop {
           self.hasMultiple = false;
           self.draggable.cancel(true);
         } else { // keeping items on the source
+          $('#ccm-drop_cluster_group').addClass('modal-trigger');
+          hostInformation[$(self.mirrorContainer[0]).attr('id')] = $(self.mirrorContainer[0]).data('json');
+          const keys = Object.keys(hostInformation);
+          $('#ccm-cluster_creation_table_body').empty();
+
+          for (const key of keys) {
+            $('#ccm-cluster_creation_table_body')
+              .append(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
+          }
+
+          self.material.triggerModal($('#ccm-drop_cluster_group'), '#ccm-modal_drop_cluster_group');
+          $(self.ccmTarget).children().removeClass('selectedItem');
           self.draggable.cancel(true);
         }
-      } else {
-        $('#ccm-drop_cluster_group').addClass('modal-trigger');
-        hostInformation[$(self.mirrorContainer[0]).attr('id')] = $(self.mirrorContainer[0]).data('json');
-        const keys = Object.keys(hostInformation);
-        $('#ccm-cluster_creation_table_body').empty();
-        console.log('host info');
-        console.log(hostInformation);
-        for (const key of keys) {
-          console.log()
-          $('#ccm-cluster_creation_table_body')
-            .append(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
+      }
+    });
+  }
+
+  dropCluster (targetId, clusterGroupActions) {
+    const self = this;
+    this.draggable.on('drop', function (el, target, source, sibling) {
+      self.mirrorContainer = $('.gu-mirror').first();
+      const hostInformation = [];
+      const isCcmCluster = $(target).attr('id') === targetId;
+      if (isCcmCluster) {
+        if (self.hasMultiple) {
+          $(self.mirrorContainer.children()).each(function () {
+            hostInformation[$(this).attr('id')] = $(this).data('json');
+          });
+
+          self.clusterGroupActions = self.cluster.addHostToCluster(hostInformation, $(target));
+          // remove the remaining items from the dom
+          $('.selectedItem').removeClass('.selectedItem');
+          self.hasMultiple = false;
+          self.draggable.cancel(true);
+        } else {
+          hostInformation[$(self.mirrorContainer[0]).attr('id')] = $(self.mirrorContainer[0]).data('json');
+          self.clusterGroupActions = self.cluster.addHostToCluster(hostInformation, $(target));
+          $(self.ccmSource).children().removeClass('selectedItem');
+          self.cluster.saveClusterGroupActions(self.clusterGroupActions);
+          self.draggable.cancel(true);
         }
-        self.material.triggerModal($('#ccm-drop_cluster_group'), '#ccm-modal_drop_cluster_group');
-        $(self.ccmTarget).children().removeClass('selectedItem');
-        self.draggable.cancel(true);
       }
     });
   }
@@ -157,6 +172,11 @@ export default class CcmDragAndDrop {
   outClusterGroup () {
     this.draggable.on('out', function (el, container) {
       $('#ccm-drop_cluster_group').css({ 'border-color': '#ededed', color: '#ededed' });
+    });
+  }
+
+  outCluster () {
+    this.draggable.on('out', function (el, container) {
     });
   }
 
@@ -209,8 +229,13 @@ export default class CcmDragAndDrop {
     });
   }
 
-  init () {
+  initKeyEvent (ccmSource) {
+    this.ccmSource = ccmSource;
     this.bindShiftPressEvent();
     this.bindMultiselectOnSource();
+  }
+
+  initDragula () {
+    this.draggable = dragula(this.options);
   }
 }

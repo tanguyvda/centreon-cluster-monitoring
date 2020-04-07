@@ -125,7 +125,7 @@ export default class CcmCluster {
       });
 
       // for each cluster in the cluster group we create the html part to display the cluster
-      clusterHtml += '<li class="ccm-droppable_list">' +
+      clusterHtml += `<li id="ccm-li_${clusterGroupId}_${this.cluster_name}" class="ccm-droppable_list">` +
         `<div class="collapsible-header" style="color: grey;" data-cluster_group_id="${clusterGroupId}" ` +
           `data-cluster_id="${this.cluster_id}">${this.cluster_name}` +
           `<i class="material-icons" onClick="removeCluster(this,${clusterGroupId},${clusterId}` +
@@ -296,5 +296,23 @@ export default class CcmCluster {
     self.clusterGroupActions[clusterGroupId].delete[clusterId].hosts.push(hostId);
 
     return self.clusterGroupActions;
+  }
+
+  /**
+  * save cluster group actions
+  *
+  * @param {object} clusterGroupActions The json with all the actions
+  */
+  saveClusterGroupActions (clusterGroupActions) {
+    this.clusterGroupActions = clusterGroupActions;
+  }
+
+  /**
+  * get cluster group cluster group actions
+  *
+  * @return {object} this.clusterGroupActions The json with all the actions
+  */
+  getClusterGroupActions () {
+    return this.clusterGroupActions;
   }
 }
