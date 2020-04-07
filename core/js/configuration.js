@@ -45,8 +45,6 @@ $(document).ready(function () {
         material.buildModal('ccm-modal_drop_cluster_group');
         material.buildCollapsible('ccm-cluster_group_configuration_popup_collapsible');
         startSearchHost(data, material);
-
-        // var drake = dragula([$('#ccm-host_list')[0], $('#ccm-drop_cluster_group')[0]],dragulaOptions);
         drag.draggable.containers.push($('#ccm-host_list')[0], $('#ccm-drop_cluster_group')[0]);
         drag.initKeyEvent($('#ccm-host_list'));
         drag.drag();
@@ -85,6 +83,7 @@ $(document).ready(function () {
             cluster.buildHostElementForList(data, key);
             $('#ccm-host_list').append(cluster.buildHostElementForList(data, key));
           }
+          drag.initKeyEvent($('#ccm-host_list'));
           material.buildTooltip('hostTooltip');
         },
         error: function (error) {
