@@ -1,5 +1,11 @@
 /** @class CcmMaterial handles material design objects */
 export default class CcmMaterial {
+  constructor () {
+    this.instance = {
+      collapsible: {}
+    };
+  }
+
   /**
   * enable tooltip for a class
   *
@@ -44,7 +50,9 @@ export default class CcmMaterial {
   */
   buildCollapsible (idName) {
     const elems = document.querySelectorAll('#' + idName);
-    M.Collapsible.init(elems);
+    this.instance.collapsible[idName] = M.Collapsible.init(elems);
+
+    return this.instance;
   }
 
   /**
@@ -63,5 +71,23 @@ export default class CcmMaterial {
   */
   dismissToast () {
     M.Toast.dismissAll();
+  }
+
+  /**
+  * update collapsible options
+  *
+  * @param {id} idName The id on which you want to create a collapsible
+  * @param {object} masonry The masonry object
+  */
+  updateCollapsible (idName, masonry) {
+    this.instance.collapsible[idName][0].options.onOpenEnd = function () {
+      masonry.masonry();
+    };
+
+    this.instance.collapsible[idName][0].options.onCloseEnd = function () {
+      masonry.masonry();
+    };
+
+    return this.instance;
   }
 }

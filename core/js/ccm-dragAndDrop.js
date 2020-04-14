@@ -1,4 +1,3 @@
-import CcmUtils from './ccm-utils.js';
 import CcmMaterial from './ccm-material.js';
 
 /** @class CcmDragAndDrop handles the drag and drop of objects */

@@ -145,7 +145,7 @@ export default class CcmCluster {
     });
 
     // we create the cluster group card
-    const card = `<div class="col s12 m6 l6 xl3 ccm-flexbox_card" data-cluster_group_id="${clusterGroupId}">` +
+    const card = `<div class="col s12 m6 l6 xl3 ccm-flexbox_card masonry-grid-item" data-cluster_group_id="${clusterGroupId}">` +
       '<div class="card blue-grey darken-1">' +
         '<div class="card-content white-text">' +
           `<span class="card-title card-tooltipped-${conf.cluster_group_name}" data-position="top" ` +
@@ -158,6 +158,7 @@ export default class CcmCluster {
       '</div>' +
     '</div>';
 
+    // createClusterDropArea(clusterGroupId);
     return card;
   }
 
@@ -315,4 +316,11 @@ export default class CcmCluster {
   getClusterGroupActions () {
     return this.clusterGroupActions;
   }
+
+  /**
+  * create a drop area in a cluster group that will create a new cluster in the cluster group
+  *
+  * @param {string} clusterGroupId The Id of the cluster group in which we have to create the drop area
+  */
+
 }
