@@ -20,10 +20,10 @@
       <div id="ccm-host_list" class="ccm-container">
       </div>
     </div>
+    <div id="ccm-drop_cluster_group" class="col s8 ccm-drop_cluster_group valign-wrapper">
+      <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
+    </div>
     <div class="col s8 ccm-cluster_group_wrapper ccm-flexbox_wrap masonry-grid">
-      <div id="ccm-drop_cluster_group" class="col s12 m6 l6 xl3 ccm-drop_cluster_group valign-wrapper ccm-flexbox_card masonry-grid-item">
-        <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
-      </div>
     </div>
   </div>
 </div>

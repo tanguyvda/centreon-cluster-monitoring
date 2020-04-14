@@ -4,7 +4,10 @@ import CcmCluster from './ccm-cluster.js';
 import CcmDragAndDrop from './ccm-dragAndDrop.js';
 
 // init masonry variable
-var masonry = '';
+var masonry = $('.masonry-grid').masonry({
+  itemSelector: '.masonry-grid-item',
+  percentPosition: true
+});
 
 // init material design object
 var material = new CcmMaterial();
@@ -198,10 +201,9 @@ function loadClusterGroups () {
           const card = cluster.createClusterGroupCard(this);
           const clusters = this.clusters;
           const clusterGroupId = this.cluster_group_id;
-          const isLastElement = index === data.length - 1;
 
           // display the card
-          $(card).insertAfter('#ccm-drop_cluster_group');
+          $('.ccm-cluster_group_wrapper').append(card);
 
           // add material component to the card
           material.buildTooltip('card-tooltipped-' + this.cluster_group_name);
@@ -214,17 +216,13 @@ function loadClusterGroups () {
           $.each(clusters, function () {
             drag.draggable.containers.push($('#ccm-li_' + clusterGroupId + '_' + this.cluster_name)[0]);
             drag.overCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name);
-            drag.dropCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name, clusterGroupActions);
+            drag.dropCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name, clusterGroupActions, masonry);
             drag.outCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name);
           });
 
-          // when creating the last card, we initiate masonry.js
-          if (isLastElement) {
-            masonry = $('.masonry-grid').masonry({
-              itemSelector: '.masonry-grid-item',
-              percentPosition: true
-            });
-          }
+          // add cluster group card to the masonry object and refresh card positioning
+          masonry.masonry('appended', $('#ccm_cluster_group_card_' + clusterGroupId));
+          masonry.masonry();
         });
 
         // update each collapsible in every cluster group so that masonry is activated when collpasible expends or reduces

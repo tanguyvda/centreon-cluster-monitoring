@@ -1,4 +1,4 @@
-/* global $ */
+/* global $, dragula */
 import CcmMaterial from './ccm-material.js';
 
 /** @class CcmDragAndDrop handles the drag and drop of objects */
@@ -116,70 +116,74 @@ export default class CcmDragAndDrop {
       const isCcmClusterGroup = $(target).attr('id') === targetId;
       if (isCcmClusterGroup) {
         if (self.hasMultiple) {
-          $('#ccm-drop_cluster_group').addClass('modal-trigger');
-
           // get the default, single dropped item
           $(self.mirrorContainer.children()).each(function () {
             hostInformation[$(this).attr('id')] = $(this).data('json');
           });
-
-          const keys = Object.keys(hostInformation);
-          $('#ccm-cluster_creation_table_body').empty();
-
-          for (const key of keys) {
-            $('#ccm-cluster_creation_table_body')
-              .append(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
-          }
-
-          self.material.triggerModal($('#ccm-drop_cluster_group'), '#ccm-modal_drop_cluster_group');
-          // remove the remaining items from the dom
+          // remove the remaining items from the DOM
           $('.selectedItem').removeClass('.selectedItem');
           // clear flag
           self.hasMultiple = false;
-          self.draggable.cancel(true);
-        } else { // keeping items on the source
-          $('#ccm-drop_cluster_group').addClass('modal-trigger');
+        } else {
           hostInformation[$(self.mirrorContainer[0]).attr('id')] = $(self.mirrorContainer[0]).data('json');
-          const keys = Object.keys(hostInformation);
-          $('#ccm-cluster_creation_table_body').empty();
-
-          for (const key of keys) {
-            $('#ccm-cluster_creation_table_body')
-              .append(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
-          }
-
-          self.material.triggerModal($('#ccm-drop_cluster_group'), '#ccm-modal_drop_cluster_group');
           $(self.ccmTarget).children().removeClass('selectedItem');
-          self.draggable.cancel(true);
         }
+
+        // prepare HTML before dropping
+        $('#ccm-drop_cluster_group').addClass('modal-trigger');
+        $('#ccm-cluster_creation_table_body').empty();
+
+        // create host list that we will display in the modal
+        const keys = Object.keys(hostInformation);
+        for (const key of keys) {
+          $('#ccm-cluster_creation_table_body')
+            .append(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
+        }
+
+        // trigger the modal and end the drop event
+        self.material.triggerModal($('#ccm-drop_cluster_group'), '#ccm-modal_drop_cluster_group');
+        self.draggable.cancel(true);
       }
     });
   }
 
-  dropCluster (targetId, clusterGroupActions) {
+  /*
+  * initate on drop in cluster event
+  *
+  * @param {string} targetId The id of the cluster
+  * @param {object} clusterGroupActions The json with all the user actions
+  * @param {object} masonry The masonry object
+  */
+  dropCluster (targetId, clusterGroupActions, masonry) {
     const self = this;
     this.draggable.on('drop', function (el, target, source, sibling) {
       self.mirrorContainer = $('.gu-mirror').first();
       const hostInformation = [];
       const isCcmCluster = $(target).attr('id') === targetId;
+
       if (isCcmCluster) {
+        // handle drop actions depending on the number of host we are dragging
         if (self.hasMultiple) {
+          // get the default, single dropped item
           $(self.mirrorContainer.children()).each(function () {
             hostInformation[$(this).attr('id')] = $(this).data('json');
           });
 
-          self.clusterGroupActions = self.cluster.addHostToCluster(hostInformation, $(target));
-          // remove the remaining items from the dom
+          // remove the remaining items from the DOM
           $('.selectedItem').removeClass('.selectedItem');
           self.hasMultiple = false;
-          self.draggable.cancel(true);
         } else {
           hostInformation[$(self.mirrorContainer[0]).attr('id')] = $(self.mirrorContainer[0]).data('json');
-          self.clusterGroupActions = self.cluster.addHostToCluster(hostInformation, $(target));
           $(self.ccmSource).children().removeClass('selectedItem');
-          self.cluster.saveClusterGroupActions(self.clusterGroupActions);
-          self.draggable.cancel(true);
         }
+
+        // update cluster group actions and save it in the object
+        self.clusterGroupActions = self.cluster.addHostToCluster(hostInformation, $(target));
+        self.cluster.saveClusterGroupActions(self.clusterGroupActions);
+
+        // reposition cards if we drop host in an expanded cluster and end drop event
+        masonry.masonry();
+        self.draggable.cancel(true);
       }
     });
   }
@@ -248,5 +252,9 @@ export default class CcmDragAndDrop {
     this.ccmSource = ccmSource;
     this.bindShiftPressEvent();
     this.bindMultiselectOnSource();
+  }
+
+  initDragula () {
+    this.draggable = dragula(this.options);
   }
 }
