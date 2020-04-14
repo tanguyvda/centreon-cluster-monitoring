@@ -58,6 +58,8 @@ $(document).ready(function () {
           $('#ccm-host_list').append(cluster.buildHostElementForList(data, key));
         }
 
+        handleScroll();
+
         // create material component
         material.buildTooltip('hostTooltip');
         material.buildModal('ccm-modal_drop_cluster_group');
@@ -118,6 +120,8 @@ $(document).ready(function () {
 
           drag.initKeyEvent($('#ccm-host_list'));
           material.buildTooltip('hostTooltip');
+
+          handleScroll();
         },
         error: function (error) {
           console.log('very bad');
@@ -273,6 +277,58 @@ window.updateClusterGroup = function (clusterGroupId) {
     }
   });
 };
+
+function handleScroll () {
+  const scrollPosition = $('#ccm-host_list').scrollTop();
+  const resultHeight = $('#ccm-host_list > div').length * 40;
+
+  // when few results are shown, reduce div height and don't display scroll indicators
+  if (resultHeight < $('#ccm-host_list').height()) {
+    $('#ccm-host_list').css('height', resultHeight + 1);
+    $('#bottom_overlay_icon').css('display', 'none');
+    $('#top_overlay_icon').css('display', 'none');
+  } else if (resultHeight > $('#ccm-host_list').height() && resultHeight <= 600) {
+    $('#ccm-host_list').css('height', resultHeight + 1);
+    $('#bottom_overlay_icon').css('display', 'none');
+    $('#top_overlay_icon').css('display', 'none');
+  }
+
+  // if many results are shown, limit size of div to 601px
+  if ($('#ccm-host_list > div').length * 40 > 600) {
+    $('#ccm-host_list').css('height', '601px');
+    const scrollHeight = $('#ccm-host_list')[0].scrollHeight - $('#ccm-host_list').height();
+
+    // initiate scroll icon display depending on the scroll bar position
+    if (scrollPosition !== 0 && scrollPosition !== scrollHeight) {
+      $('#bottom_overlay_icon').css('display', 'table-cell');
+      $('#top_overlay_icon').css('display', 'table-cell');
+    } else if (scrollPosition === 0 && scrollPosition !== scrollHeight) {
+      $('#top_overlay_icon').css('display', 'none');
+      $('#bottom_overlay_icon').css('display', 'table-cell');
+    } else if (scrollPosition !== 0 && scrollPosition === scrollHeight) {
+      $('#bottom_overlay_icon').css('display', 'none');
+      $('#top_overlay_icon').css('display', 'table-cell');
+    }
+  }
+
+  // when through the host list, display scroll icon depending on scroll position
+  const scrollHeight = $('#ccm-host_list')[0].scrollHeight - $('#ccm-host_list').height();
+  $('#ccm-host_list').scroll(function () {
+    const scrollPosition = $('#ccm-host_list').scrollTop();
+
+    if (scrollPosition === 0) {
+      $('#top_overlay_icon').css('display', 'none');
+    } else {
+      $('#top_overlay_icon').css('display', 'table-cell');
+    }
+
+    if (scrollPosition === scrollHeight && scrollHeight >= 0) {
+      $('#bottom_overlay_icon').css('display', 'none');
+    } else if (scrollHeight > 0 && scrollPosition !== scrollHeight) {
+      $('#bottom_overlay_icon').css('display', 'table-cell');
+    }
+  });
+}
 
 // {
 //    cluster_group_id: {
