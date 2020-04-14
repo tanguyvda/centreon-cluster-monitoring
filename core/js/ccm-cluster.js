@@ -1,3 +1,4 @@
+/* global $ */
 import CcmUtils from './ccm-utils.js';
 import CcmMaterial from './ccm-material.js';
 
@@ -322,5 +323,4 @@ export default class CcmCluster {
   *
   * @param {string} clusterGroupId The Id of the cluster group in which we have to create the drop area
   */
-
 }

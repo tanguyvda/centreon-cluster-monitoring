@@ -1,3 +1,4 @@
+/* global M */
 /** @class CcmMaterial handles material design objects */
 export default class CcmMaterial {
   constructor () {

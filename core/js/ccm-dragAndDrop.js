@@ -1,3 +1,4 @@
+/* global $ */
 import CcmMaterial from './ccm-material.js';
 
 /** @class CcmDragAndDrop handles the drag and drop of objects */
@@ -20,10 +21,16 @@ export default class CcmDragAndDrop {
     this.material = new CcmMaterial();
   }
 
+  /*
+  * initiate on drag event
+  */
   drag () {
     this.draggable.on('drag', el => {});
   }
 
+  /*
+  * initiate on cloned event
+  */
   cloned () {
     const self = this;
     this.draggable.on('cloned', (clone, original, type) => {
@@ -67,10 +74,12 @@ export default class CcmDragAndDrop {
     });
   }
 
+  /*
+  * initiate on over cluster group event
+  */
   overClusterGroup () {
     const self = this;
     this.draggable.on('over', function (el, container, source) {
-      // this.mirrorContainer = $('.gu-mirror').first();
       const isOverCcmClusterGroup = $(container).attr('id') === 'ccm-drop_cluster_group';
 
       if (isOverCcmClusterGroup) {
@@ -81,8 +90,10 @@ export default class CcmDragAndDrop {
     });
   }
 
+  /*
+  * initiate on over cluster event
+  */
   overCluster () {
-    const self = this;
     this.draggable.on('over', function (el, container, source) {
       const isOverCluster = $(container).attr('id') === 'ccm-cluster_group_cluster-group-name';
 
@@ -92,6 +103,11 @@ export default class CcmDragAndDrop {
     });
   }
 
+  /*
+  * initate on drop in cluster group event
+  *
+  * @param {string} targetId The id of the cluster group drop area
+  */
   dropClusterGroup (targetId) {
     const self = this;
     this.draggable.on('drop', function (el, target, source, sibling) {
@@ -232,9 +248,5 @@ export default class CcmDragAndDrop {
     this.ccmSource = ccmSource;
     this.bindShiftPressEvent();
     this.bindMultiselectOnSource();
-  }
-
-  initDragula () {
-    this.draggable = dragula(this.options);
   }
 }

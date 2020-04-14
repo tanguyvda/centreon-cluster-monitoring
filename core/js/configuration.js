@@ -1,3 +1,4 @@
+/* global $ */
 import CcmMaterial from './ccm-material.js';
 import CcmCluster from './ccm-cluster.js';
 import CcmDragAndDrop from './ccm-dragAndDrop.js';
@@ -176,7 +177,6 @@ function saveClusterGroup (conf) {
     }
   });
 }
-
 
 /*
 * Load cluster groups that are saved in the database
