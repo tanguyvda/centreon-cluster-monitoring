@@ -1,9 +1,9 @@
 <html>
 <head>
   <link href="./modules/centreon-cluster-monitoring/core/css/reset.css" rel="stylesheet" type="text/css"/>
-  <link href="./modules/centreon-cluster-monitoring/core/css/configuration.css" rel="stylesheet" type="text/css"/>
   <link href="./modules/centreon-cluster-monitoring/core/css/materialize.min.css" rel="stylesheet" type="text/css"/>
   <link href="./modules/centreon-cluster-monitoring/core/css/dragula.min.css" rel="stylesheet" type="text/css"/>
+  <link href="./modules/centreon-cluster-monitoring/core/css/configuration.css" rel="stylesheet" type="text/css"/>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
@@ -20,10 +20,10 @@
       <div id="ccm-host_list" class="ccm-container">
       </div>
     </div>
-    <div id="ccm-drop_cluster_group" class="col s8 ccm-drop_cluster_group valign-wrapper">
+    <div id="ccm-drop_cluster_group" class="col s9 ccm-drop_cluster_group valign-wrapper">
       <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
     </div>
-    <div class="col s8 ccm-cluster_group_wrapper ccm-flexbox_wrap masonry-grid">
+    <div id="ccm-cluster_group_wrapper" class="col s9 ccm-cluster_group_wrapper ccm-flexbox_wrap masonry-grid">
     </div>
   </div>
 </div>

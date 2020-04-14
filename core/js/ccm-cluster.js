@@ -147,7 +147,7 @@ export default class CcmCluster {
 
     // we create the cluster group card
     const card = `<div id="ccm_cluster_group_card_${clusterGroupId}" ` +
-      `class="col s12 m6 l6 xl3 ccm-flexbox_card masonry-grid-item" data-cluster_group_id="${clusterGroupId}">` +
+      `class="col s12 m6 l6 xl4 ccm-flexbox_card masonry-grid-item" data-cluster_group_id="${clusterGroupId}">` +
       '<div class="card blue-grey darken-1">' +
         '<div class="card-content white-text">' +
           `<span class="card-title card-tooltipped-${conf.cluster_group_name}" data-position="top" ` +

@@ -98,3 +98,7 @@ li > .gu-transit {
 .selectedItem {
   background-color: blue;
 }
+
+#ccm-cluster_group_wrapper {
+  padding: 0;
+}
