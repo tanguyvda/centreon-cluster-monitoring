@@ -26,6 +26,7 @@
       <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
     </div>
     <div id="ccm-cluster_group_wrapper" class="col s9 ccm-cluster_group_wrapper ccm-flexbox_wrap masonry-grid">
+      <div class="col s1 grid-sizer"></div>
     </div>
   </div>
 </div>

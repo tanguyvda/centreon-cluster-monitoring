@@ -6,7 +6,8 @@ import CcmDragAndDrop from './ccm-dragAndDrop.js';
 // init masonry variable
 var masonry = $('.masonry-grid').masonry({
   itemSelector: '.masonry-grid-item',
-  percentPosition: true
+  percentPosition: true,
+  columnWidth: '.grid-sizer'
 });
 
 // init material design object

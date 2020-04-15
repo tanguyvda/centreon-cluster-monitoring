@@ -39,6 +39,11 @@ html, body {
   display: none;
 }
 
+@-moz-document url-prefix() {
+  #ccm-host_list {
+    scrollbar-width: none;
+  }
+}
 
 /* .ccm-flexbox_wrap {
   display: flex;
