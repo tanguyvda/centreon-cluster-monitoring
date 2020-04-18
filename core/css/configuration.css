@@ -45,6 +45,18 @@ html, body {
   }
 }
 
+.ccm-drop_only_area {
+  height: 80px;
+  border: 8px dashed #ededed;
+  color: #ededed;
+  font-weight: bolder;
+  /* text-align: center; */
+}
+/* .ccm-drop_only_area > p {
+  display: inline;
+  text-align: center;
+} */
+
 /* .ccm-flexbox_wrap {
   display: flex;
   flex-wrap: wrap;
@@ -114,7 +126,12 @@ html, body {
 li > .gu-transit {
   display: none;
 }
+
 #ccm-drop_cluster_group > .gu-transit {
+  display: none;
+}
+
+.ccm-drop_only_area > .gu-transit {
   display: none;
 }
 

@@ -34,7 +34,6 @@ export default class CcmMaterial {
   * @param {id} href The element id that must be linked through the href
   */
   triggerModal (element, href) {
-    console.log('youhou');
     // add href to element
     element.attr('href', href);
     // click href to open modal

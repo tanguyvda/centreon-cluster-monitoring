@@ -108,18 +108,22 @@ class ccm
 
         $pdoParams =  array(
             'clusterGroupName' => array(
+                'parameter' => ':clusterGroupName_' . $clusterGroupName,
                 'type' => 'string',
                 'value' => $clusterGroupName
             ),
             'clusterName' => array (
+                'parameter' => ':clusterName_' . $clusterName,
                 'type' => 'string',
                 'value' => $clusterName
             ),
             'warningThreshold' => array(
+                'parameter' => ':warning_' . $warningThreshold,
                 'type' => 'int',
                 'value' => $warningThreshold
             ),
             'criticalThreshold' => array(
+                'parameter' => ':critical_' . $criticalThreshold,
                 'type' => 'int',
                 'value' => $criticalThreshold
             )
@@ -127,12 +131,104 @@ class ccm
 
         $query = "INSERT INTO mod_ccm_cluster (`cluster_name`,`cluster_group_id`,`warning_threshold`," .
             " `critical_threshold`) VALUE (" .
-            " :pdo_clusterName, (SELECT cluster_group_id FROM mod_ccm_cluster_group" .
-            " WHERE `cluster_group_name` = :pdo_clusterGroupName), :pdo_warningThreshold, :pdo_criticalThreshold)";
+            " :clusterName_clusterName, (SELECT cluster_group_id FROM mod_ccm_cluster_group" .
+            " WHERE `cluster_group_name` = :clusterGroupName_" . $clusterGroupName . ")," .
+            " :warning_" . $warningThreshold . ", :critical_" . $criticalThreshold . ")";
 
         foreach ($pdoParams as $key => $param) {
             $mainQueryParameters[] = [
-                'parameter' => ':pdo_' . $key,
+                'parameter' => $param['parameter'],
+                'value' => ($param['type'] == 'int' ? (int)$param['value'] : (string)$param['value']),
+                'type' => ($param['type'] == 'int' ? PDO::PARAM_INT : PDO::PARAM_STR)
+            ];
+        }
+
+        $res = $this->db->prepare($query);
+
+        foreach ($mainQueryParameters as $param) {
+            $res->bindValue($param['parameter'], $param['value'], $param['type']);
+        }
+
+        try {
+            $res->execute();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        unset($mainQueryParameters);
+        $clusterArray[] = $clusterName;
+        $clusterId = $this->getClustersId($clusterArray);
+
+        $query = "INSERT INTO mod_ccm_cluster_host_relation (`cluster_id`, `host_id`) VALUES";
+
+        foreach ($conf['clusters'][0]['hosts'] as $host) {
+            $query .= " (" . $clusterId[0]['id'] . ", :pdo_" . $host['host_id'] . "),";
+            $mainQueryParameters[] = [
+                'parameter' => ':pdo_' . $host['host_id'],
+                'value' => (int)$host['host_id'],
+                'type' => PDO::PARAM_INT
+            ];
+        }
+
+        $query = rtrim($query, ',');
+        $res = $this->db->prepare($query);
+
+        foreach ($mainQueryParameters as $param) {
+            $res->bindValue($param['parameter'], $param['value'], $param['type']);
+        }
+
+        $res->execute();
+
+        return true;
+    }
+
+    /**
+    * save cluster configuration in database
+    *
+    * @param array $conf cluster configuration data
+    *
+    * @return bool
+    *
+    * throw \Exception if we can't reach database
+    */
+    public function saveCluster($data) {
+        $conf = $data['param'];
+        $clusterGroupId = $conf['cluster_group_id'];
+        $clusterName = $conf['clusters'][0]['cluster_name'];
+        $warningThreshold = $conf['clusters'][0]['warning_threshold'];
+        $criticalThreshold = $conf['clusters'][0]['critical_threshold'];
+
+        $pdoParams =  array(
+            'clusterGroupId' => array(
+                'parameter' => ':clusterGroupId_' . $clusterGroupId,
+                'type' => 'int',
+                'value' => $clusterGroupId
+            ),
+            'clusterName' => array (
+                'parameter' => ':clusterName_' . $clusterName,
+                'type' => 'string',
+                'value' => $clusterName
+            ),
+            'warningThreshold' => array(
+                'parameter' => ':warning_' . $warningThreshold,
+                'type' => 'int',
+                'value' => $warningThreshold
+            ),
+            'criticalThreshold' => array(
+                'parameter' => ':critical_' . $criticalThreshold,
+                'type' => 'int',
+                'value' => $criticalThreshold
+            )
+        );
+
+        $query = "INSERT INTO mod_ccm_cluster (`cluster_name`,`cluster_group_id`,`warning_threshold`," .
+            " `critical_threshold`) VALUE ( :clusterName_" . $clusterName . "," .
+            " :clusterGroupId_" . $clusterGroupId . ", :warning_" . $warningThreshold .
+            ", :critical_" . $criticalThreshold . ")";
+
+        foreach ($pdoParams as $key => $param) {
+            $mainQueryParameters[] = [
+                'parameter' => $param['parameter'],
                 'value' => ($param['type'] == 'int' ? (int)$param['value'] : (string)$param['value']),
                 'type' => ($param['type'] == 'int' ? PDO::PARAM_INT : PDO::PARAM_STR)
             ];

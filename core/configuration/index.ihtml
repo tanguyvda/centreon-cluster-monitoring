@@ -82,7 +82,7 @@
                   <th>Delete</th>
                 </tr>
               </thead>
-              <tbody id="ccm-cluster_creation_table_body">
+              <tbody id="ccm-cluster_group_creation_table_body">
               </tbody>
             </table>
           </div>
@@ -90,10 +90,52 @@
       </ul>
     </div>
     <div class="modal-footer">
-      <a id="ccm-close_modal" href="#!" class="modal-close" style="display: none;"></a>
+      <a id="ccm-close_cluster_group_modal" href="#!" class="modal-close" style="display: none;"></a>
       <a id="ccm-save_cluster_group_button" href="#!" class="waves-effect waves-green btn-flat" onclick="createClusterGroupButton()">Agree</a>
     </div>
   </div>
+
+  <div id="ccm-modal_drop_cluster" class="modal modal-fixed-footer">
+      <div class="modal-content row">
+        <ul id="ccm-cluster_configuration_popup_collapsible" class="collapsible col s10 offset-s1">
+          <li>
+            <div class="collapsible-header">
+              <div class="input-field col s4">
+                <input id="ccm-cluster_form_cluster_name" type="text">
+                <label for="ccm-cluster_form_cluster_name">CLUSTER NAME</label>
+              </div>
+              <div class="input-field col s2">
+                <input id="ccm-cluster_form_cluster_wthreshold" type="number">
+                <label for="ccm-cluster_form_cluster_wthreshold">warning</label>
+              </div>
+              <div class="input-field col s2">
+                <input id="ccm-cluster_form_cluster_cthreshold" type="number">
+                <label for="ccm-cluster_form_cluster_cthreshold">critical</label>
+              </div>
+            </div>
+            <div id="ccm-first_collapisble_item" class="collapsible-body">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Host name</th>
+                    <th>Host alias</th>
+                    <th>Host address</th>
+                    <th>Host comment</th>
+                    <th>Delete</th>
+                  </tr>
+                </thead>
+                <tbody id="ccm-cluster_creation_table_body">
+                </tbody>
+              </table>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <a id="ccm-close_cluster_modal" href="#!" class="modal-close" style="display: none;"></a>
+        <a id="ccm-save_cluster_button" href="#!" class="waves-effect waves-green btn-flat" onclick="createClusterButton()">Agree</a>
+      </div>
+    </div>
   <script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/masonry.min.js"></script>
   <script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/materialize.min.js"></script>
   <script type="text/javascript" src="./modules/centreon-cluster-monitoring/core/js/dragula.min.js"></script>

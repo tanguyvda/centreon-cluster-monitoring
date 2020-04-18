@@ -64,7 +64,9 @@ $(document).ready(function () {
         // create material component
         material.buildTooltip('hostTooltip');
         material.buildModal('ccm-modal_drop_cluster_group');
+        material.buildModal('ccm-modal_drop_cluster');
         material.buildCollapsible('ccm-cluster_group_configuration_popup_collapsible');
+        material.buildCollapsible('ccm-cluster_configuration_popup_collapsible');
 
         // enable search function for hosts
         startSearchHost(data, material);
@@ -91,7 +93,7 @@ $(document).ready(function () {
     }
   });
 
-  /*
+  /**
   * search hosts in the gathered list
   *
   * @param {object} data The host list
@@ -138,7 +140,7 @@ window.createClusterGroupButton = function () {
   const clusterGroupConfiguration = cluster.createClusterGroup();
 
   // add host data in the cluster group
-  $('#ccm-cluster_creation_table_body > tr').each(function (index, tr) {
+  $('#ccm-cluster_group_creation_table_body > tr').each(function (index, tr) {
     clusterGroupConfiguration.clusters[0].hosts[index] = $(tr).data('json');
   });
 
@@ -146,7 +148,20 @@ window.createClusterGroupButton = function () {
   saveClusterGroup(clusterGroupConfiguration);
 };
 
-/*
+window.createClusterButton = function () {
+  // create cluster configuration
+  const clusterConfiguration = cluster.createCluster();
+
+  // add host data in the cluster
+  $('#ccm-cluster_creation_table_body > tr').each(function (index, tr) {
+    clusterConfiguration.clusters[0].hosts[index] = $(tr).data('json');
+  });
+
+  // save cluster in database
+  saveCluster(clusterConfiguration);
+};
+
+/**
 * save a cluster group in the database
 *
 * @param {object} conf The cluster group configuration
@@ -164,7 +179,7 @@ function saveClusterGroup (conf) {
     success: function (data) {
       if (data) {
         // close the cluster group creation popup
-        $('#ccm-close_modal')[0].click();
+        $('#ccm-close_cluster_group_modal')[0].click();
 
         // create the html card and display it
         const card = cluster.createClusterGroupCard(conf);
@@ -186,7 +201,44 @@ function saveClusterGroup (conf) {
   });
 }
 
-/*
+/**
+* save cluster in database
+*
+* @param {object} conf The configuration of the cluster
+*/
+function saveCluster (conf) {
+  $.ajax({
+    url: './api/internal.php?object=centreon_clustermonitoring&action=CcmData',
+    type: 'POST',
+    contentType: 'application/json',
+    dataType: 'json',
+    data: JSON.stringify({
+      ccm_method: 'saveCluster',
+      param: conf
+    }),
+    success: function (data) {
+      if (data) {
+        // close the cluster creation popup
+        $('#ccm-close_cluster_modal')[0].click();
+
+        cluster.addClusterToClusterGroup(conf);
+
+        drag.draggable.containers.push($('#ccm-li_' + conf.cluster_group_id + '_' + conf.clusters[0].cluster_name)[0]);
+        drag.overCluster('ccm-li_' + conf.cluster_group_id + '_' + conf.clusters[0].cluster_name);
+        drag.dropCluster('ccm-li_' + conf.cluster_group_id + '_' + conf.clusters[0].cluster_name, clusterGroupActions, masonry);
+        drag.outCluster('ccm-li_' + conf.cluster_group_id + '_' + conf.clusters[0].cluster_name);
+        console.log(drag);
+      } else {
+        console.log('not good');
+      }
+    },
+    error: function (error) {
+      material.toastError(error.responseText);
+    }
+  });
+}
+
+/**
 * Load cluster groups that are saved in the database
 */
 function loadClusterGroups () {
@@ -212,17 +264,24 @@ function loadClusterGroups () {
 
           // add material component to the card
           material.buildTooltip('card-tooltipped-' + this.cluster_group_name);
-          materialInstance = material.buildCollapsible('ccm-cluster_group_' + this.cluster_group_name);
+          materialInstance = material.buildCollapsible('ccm-cluster_group_' + clusterGroupId);
 
           // initiate the list of actions users will do (remove host from cluster, remove cluster from cluster group...)
           clusterGroupActions = cluster.initiateClusterGroupActions(this.cluster_group_id);
 
           // enable dropping host in a cluster
           $.each(clusters, function () {
+            // make each cluster in a cluster group a possible drop area
             drag.draggable.containers.push($('#ccm-li_' + clusterGroupId + '_' + this.cluster_name)[0]);
             drag.overCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name);
             drag.dropCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name, clusterGroupActions, masonry);
             drag.outCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name);
+
+            // add drop possibilities to the create cluster drop area
+            drag.draggable.containers.push($('#ccm-cluster_drop_area_' + clusterGroupId)[0]);
+            drag.overCreateCluster('ccm-cluster_drop_area_' + clusterGroupId);
+            drag.dropCreateCluster('ccm-cluster_drop_area_' + clusterGroupId, clusterGroupId);
+            drag.outCreateCluster('ccm-cluster_drop_area_' + clusterGroupId);
           });
 
           // add cluster group card to the masonry object and refresh card positioning
@@ -232,7 +291,7 @@ function loadClusterGroups () {
 
         // update each collapsible in every cluster group so that masonry is activated when collpasible expends or reduces
         $.each(data, function () {
-          material.updateCollapsible('ccm-cluster_group_' + this.cluster_group_name, masonry, materialInstance);
+          material.updateCollapsible('ccm-cluster_group_' + this.cluster_group_id, masonry, materialInstance);
         });
       } else {
         console.log('not good');

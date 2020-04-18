@@ -105,6 +105,36 @@ export default class CcmCluster {
   }
 
   /**
+  * create the cluster configuration
+  *
+  * @return {object} clusterConfiguration The json configuration of the cluster
+  * @return {toast} Error if there are white spaces in cluster name
+  */
+  createCluster () {
+    const self = this;
+    const clusterName = $('#ccm-cluster_form_cluster_name').val();
+    const warningThreshold = $('#ccm-cluster_form_cluster_wthreshold').val();
+    const criticalThreshold = $('#ccm-cluster_form_cluster_cthreshold').val();
+    const clusterGroupId = $('#ccm-modal_drop_cluster').data('cluster_group_id');
+
+    if (self.utils.testWhiteSpace(clusterName)) {
+      return self.material.toastError("You can't have white space in your cluster name");
+    }
+
+    const clusterConfiguration = {
+      cluster_group_id: clusterGroupId,
+      clusters: [{
+        cluster_name: clusterName,
+        warning_threshold: warningThreshold,
+        critical_threshold: criticalThreshold,
+        hosts: []
+      }]
+    };
+
+    return clusterConfiguration;
+  }
+
+  /**
   * create a cluster group card
   *
   * @param {object} conf The configuration of a cluster group
@@ -152,8 +182,9 @@ export default class CcmCluster {
         '<div class="card-content white-text">' +
           `<span class="card-title card-tooltipped-${conf.cluster_group_name}" data-position="top" ` +
             `data-tooltip="${conf.cluster_group_name}">${conf.cluster_group_name}</span>` +
-          `<ul id="ccm-cluster_group_${conf.cluster_group_name}" class="collapsible">${clusterHtml}</ul>` +
-        '</div>' +
+          `<ul id="ccm-cluster_group_${conf.cluster_group_id}" class="collapsible">${clusterHtml}</ul>` +
+        `<div id="ccm-cluster_drop_area_${clusterGroupId}" class="ccm-drop_only_area valign-wrapper">` +
+        '<p class="center-align">DROP YOUR HOSTS HERE<p></div></div>' +
         '<div class="card-action">' +
           `<a href="#" onClick="updateClusterGroup(${clusterGroupId})">SAVE</a>` +
         '</div>' +
@@ -162,6 +193,49 @@ export default class CcmCluster {
 
     // createClusterDropArea(clusterGroupId);
     return card;
+  }
+
+  /**
+  * add a new cluster in a cluster card
+  *
+  * @param {object} conf The configuration of the cluster
+  */
+  addClusterToClusterGroup (conf) {
+    let clusterHtml = '';
+    let hostHtml = '';
+    const clusterGroupId = conf.cluster_group_id;
+    $.each(conf.clusters, function () {
+      const clusterId = this.cluster_id;
+
+      // for each host in each cluster we create the html part to display hosts
+      $.each(this.hosts, function () {
+        hostHtml += `<tr data-cluster_group_id="${clusterGroupId}" data-cluster_id="${clusterId}" ` +
+          `data-host_id="${this.host_id}"><td>${this.host_name}</td>` +
+          '<td><i class="material-icons" onClick="removeHost(this,' +
+            `${clusterGroupId},${clusterId},${this.host_id})">highlight_off</i></td></tr>`;
+      });
+
+      // for each cluster in the cluster group we create the html part to display the cluster
+      clusterHtml += `<li id="ccm-li_${clusterGroupId}_${this.cluster_name}" class="ccm-droppable_list">` +
+        `<div class="collapsible-header" style="color: grey;" data-cluster_group_id="${clusterGroupId}" ` +
+          `data-cluster_id="${this.cluster_id}">${this.cluster_name}` +
+          `<i class="material-icons" onClick="removeCluster(this,${clusterGroupId},${clusterId}` +
+          ')">highlight_off</i></div>' +
+        '<div class="collapsible-body">' +
+          '<table>' +
+            '<thead>' +
+              '<tr>' +
+                '<th>Host name</th>' +
+                '<th>Remove</th>' +
+              '</tr>' +
+            '</thead>' +
+            `<tbody>${hostHtml}</tbody>` +
+          '</table>' +
+        '</div>' +
+      '</li>';
+    });
+
+    $('#ccm-cluster_group_' + clusterGroupId).append(clusterHtml);
   }
 
   /**
