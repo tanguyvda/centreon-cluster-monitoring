@@ -178,9 +178,9 @@ export default class CcmCluster {
       `class="col s12 m6 l6 xl4 ccm-flexbox_card masonry-grid-item" data-cluster_group_id="${clusterGroupId}">` +
       '<div class="card">' +
         '<div class="card-content white-text">' +
-          `<span class="card-title card-tooltipped-${conf.cluster_group_name}" data-position="top" ` +
+          `<span class="card-title card-tooltipped-${clusterGroupId}" data-position="top" ` +
             `data-tooltip="${conf.cluster_group_name}">${conf.cluster_group_name}</span>` +
-          `<ul id="ccm-cluster_group_${conf.cluster_group_id}" class="collapsible">${clusterHtml}</ul>` +
+          `<ul id="ccm-cluster_group_${clusterGroupId}" class="collapsible">${clusterHtml}</ul>` +
         `<div id="ccm-cluster_drop_area_${clusterGroupId}" class="ccm-drop_only_area valign-wrapper">` +
         '<p class="center-align">DROP YOUR HOSTS HERE<p></div></div>' +
         '<div class="card-action">' +
