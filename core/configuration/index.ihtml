@@ -7,25 +7,28 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-<div class="row">
-  <div class="input-field ccm-search_host_list col s3">
-    <i class="material-icons prefix">search</i>
-    <input id="ccm-search_host" type="text" class="validate ccm-search_host">
-    <label for="ccm-search_host">Search hosts</label>
-  </div>
+<div id="ccm-search_menu" class="row navbar-fixed">
+  <nav>
+    <div class="nav-wrapper col s12">
+      <div id="ccm-drop_cluster_group" class="ccm-drop_cluster_group valign-wrapper col s3">
+        <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
+      </div>
+      <div class="input-field ccm-search_host_list col s3">
+        <i class="material-icons prefix">search</i>
+        <input id="ccm-search_host" type="text" class="validate ccm-search_host">
+        <label for="ccm-search_host">Search hosts</label>
+      </div>
+    </div>
+  </nav>
+</div>
+<div class="ccm-host_list_wrapper row">
+  <div id="top_overlay"><i id="top_overlay_icon" class="material-icons">keyboard_arrow_up</i></div>
+  <div id="ccm-host_list" class="ccm-container"></div>
+  <div id="bottom_overlay"><i id="bottom_overlay_icon" class="material-icons">keyboard_arrow_down</i></div>
 </div>
 <div class="row ccm-parent">
   <div class="ccm-wrapper col s12">
-    <div class="col s3 ccm-host_list_wrapper">
-      <div id="top_overlay"><i id="top_overlay_icon" class="material-icons">keyboard_arrow_up</i></div>
-      <div id="bottom_overlay"><i id="bottom_overlay_icon" class="material-icons">keyboard_arrow_down</i></div>
-      <div id="ccm-host_list" class="ccm-container">
-      </div>
-    </div>
-    <div id="ccm-drop_cluster_group" class="col s9 ccm-drop_cluster_group valign-wrapper">
-      <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
-    </div>
-    <div id="ccm-cluster_group_wrapper" class="col s9 ccm-cluster_group_wrapper ccm-flexbox_wrap masonry-grid">
+    <div id="ccm-cluster_group_wrapper" class="col s12 ccm-cluster_group_wrapper ccm-flexbox_wrap masonry-grid">
       <div class="col s1 grid-sizer"></div>
     </div>
   </div>

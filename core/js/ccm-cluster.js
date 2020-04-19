@@ -178,7 +178,7 @@ export default class CcmCluster {
     // we create the cluster group card
     const card = `<div id="ccm_cluster_group_card_${clusterGroupId}" ` +
       `class="col s12 m6 l6 xl4 ccm-flexbox_card masonry-grid-item" data-cluster_group_id="${clusterGroupId}">` +
-      '<div class="card blue-grey darken-1">' +
+      '<div class="card">' +
         '<div class="card-content white-text">' +
           `<span class="card-title card-tooltipped-${conf.cluster_group_name}" data-position="top" ` +
             `data-tooltip="${conf.cluster_group_name}">${conf.cluster_group_name}</span>` +
@@ -399,51 +399,85 @@ export default class CcmCluster {
   handleHostListScroll () {
     const scrollPosition = $('#ccm-host_list').scrollTop();
     const resultHeight = $('#ccm-host_list > div').length * 40;
+    const maxHostListHeight = $(window).height() - 80 - $(window).height() * 0.08;
 
     // when few results are shown, reduce div height and don't display scroll indicators
     if (resultHeight < $('#ccm-host_list').height()) {
-      $('#ccm-host_list').css('height', resultHeight + 1);
+      $('#ccm-host_list').css('height', resultHeight);
       $('#bottom_overlay_icon').css('display', 'none');
+      $('#bottom_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+      $('#bottom_overlay').css('border-top', '0px solid #e0c7c1');
       $('#top_overlay_icon').css('display', 'none');
-    } else if (resultHeight > $('#ccm-host_list').height() && resultHeight <= 600) {
-      $('#ccm-host_list').css('height', resultHeight + 1);
+      $('#top_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+      $('#top_overlay').css('border-bottom', '0px solid #e0c7c1');
+    } else if (resultHeight > $('#ccm-host_list').height() && resultHeight <= maxHostListHeight) {
+      $('#ccm-host_list').css('height', resultHeight);
       $('#bottom_overlay_icon').css('display', 'none');
+      $('#bottom_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+      $('#bottom_overlay').css('border-top', '0px solid #e0c7c1');
       $('#top_overlay_icon').css('display', 'none');
+      $('#top_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+      $('#top_overlay').css('border-bottom', '0px solid #e0c7c1');
     }
 
     // if many results are shown, limit size of div to 601px
-    if ($('#ccm-host_list > div').length * 40 > 600) {
-      $('#ccm-host_list').css('height', '601px');
+    if ($('#ccm-host_list > div').length * 40 > maxHostListHeight) {
+      $('#ccm-host_list').css('height', maxHostListHeight + 'px');
       const scrollHeight = $('#ccm-host_list')[0].scrollHeight - $('#ccm-host_list').height();
 
       // initiate scroll icon display depending on the scroll bar position
       if (scrollPosition !== 0 && scrollPosition !== scrollHeight) {
         $('#bottom_overlay_icon').css('display', 'table-cell');
+        $('#bottom_overlay').css('box-shadow', '0px -2px 10px 0px rgba(0,0,0,0.65)');
+        $('#bottom_overlay').css('border-top', '1px solid #e0c7c1');
         $('#top_overlay_icon').css('display', 'table-cell');
+        $('#top_overlay').css('box-shadow', '0px 2px 10px 0px rgba(0,0,0,0.65)');
+        $('#top_overlay').css('border-bottom', '1px solid #e0c7c1');
       } else if (scrollPosition === 0 && scrollPosition !== scrollHeight) {
         $('#top_overlay_icon').css('display', 'none');
+        $('#top_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+        $('#top_overlay').css('border-bottom', '0px solid #e0c7c1');
         $('#bottom_overlay_icon').css('display', 'table-cell');
+        $('#bottom_overlay').css('box-shadow', '0px -2px 10px 0px rgba(0,0,0,0.65)');
+        $('#bottom_overlay').css('border-top', '1px solid #e0c7c1');
       } else if (scrollPosition !== 0 && scrollPosition === scrollHeight) {
         $('#bottom_overlay_icon').css('display', 'none');
+        $('#bottom_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+        $('#bottom_overlay').css('border-top', '0px solid #e0c7c1');
         $('#top_overlay_icon').css('display', 'table-cell');
+        $('#top_overlay').css('box-shadow', '0px 2px 10px 0px rgba(0,0,0,0.65)');
+        $('#top_overlay').css('border-bottom', '1px solid #e0c7c1');
       }
     }
 
     // when through the host list, display scroll icon depending on scroll position
     const scrollHeight = $('#ccm-host_list')[0].scrollHeight - $('#ccm-host_list').height();
     $('#ccm-host_list').scroll(function () {
-      const scrollPosition = $('#ccm-host_list').scrollTop();
+      let scrollPosition = $('#ccm-host_list').scrollTop();
+
+      // dirty fix because scrollPosition may be stuck 0.x px before scrollHeight meaning that it reached the bottom
+      if (scrollPosition > scrollHeight - 1) {
+        scrollPosition = scrollHeight;
+      }
 
       if (scrollPosition === 0) {
         $('#top_overlay_icon').css('display', 'none');
+        $('#top_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+        $('#top_overlay').css('border-bottom', '0px solid #e0c7c1');
       } else {
         $('#top_overlay_icon').css('display', 'table-cell');
+        $('#top_overlay').css('box-shadow', '0px 2px 10px 0px rgba(0,0,0,0.65)');
+        $('#top_overlay').css('border-bottom', '1px solid #e0c7c1');
       }
 
       if (scrollPosition === scrollHeight && scrollHeight >= 0) {
         $('#bottom_overlay_icon').css('display', 'none');
+        $('#bottom_overlay').css('box-shadow', '0px 0px 0px 0px rgba(0,0,0,0.65)');
+        $('#bottom_overlay').css('border-top', '0px solid #e0c7c1');
       } else if (scrollHeight > 0 && scrollPosition !== scrollHeight) {
         $('#bottom_overlay_icon').css('display', 'table-cell');
+        $('#bottom_overlay').css('box-shadow', '0px -2px 10px 0px rgba(0,0,0,0.65)');
+        $('#bottom_overlay').css('border-top', '1px solid #e0c7c1');
       }
     });
   }

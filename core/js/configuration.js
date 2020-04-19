@@ -9,7 +9,6 @@ var masonry = $('.masonry-grid').masonry({
   percentPosition: true,
   columnWidth: '.grid-sizer'
 });
-
 // init material design object
 var material = new CcmMaterial();
 var materialInstance = {};
