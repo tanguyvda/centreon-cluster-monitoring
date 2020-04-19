@@ -371,6 +371,7 @@ class ccm
         }
 
         $i = 0;
+
         foreach ($clusterGroups as $clusterGroup) {
             $clusterGroupsConfiguration[$i] = [
                 'cluster_group_id' => $clusterGroup['cluster_group_id'],
@@ -384,12 +385,16 @@ class ccm
 
             $j = 0;
             $clusters = $this->_getClustersConfiguration(array($clusterGroup['cluster_group_id']));
-            foreach ($clusters as $cluster) {
-                $clusterGroupsConfiguration[$i]['clusters'][$j] = $cluster;
-                $hosts = $this->_getClustersHosts(array($cluster['cluster_id']));
-                $clusterGroupsConfiguration[$i]['clusters'][$j]['hosts'] = $hosts;
-                $j++;
+
+            if (isset($clusters) && $clusters != '') {
+                foreach ($clusters as $cluster) {
+                    $clusterGroupsConfiguration[$i]['clusters'][$j] = $cluster;
+                    $hosts = $this->_getClustersHosts(array($cluster['cluster_id']));
+                    $clusterGroupsConfiguration[$i]['clusters'][$j]['hosts'] = $hosts;
+                    $j++;
+                }
             }
+
             $i++;
         }
 
@@ -465,6 +470,8 @@ class ccm
         } catch (\Exception $e) {;
             throw new \Exception($e->getMessage(), $e->getCode());
         }
+
+        $clustersConfiguration = [];
 
         while ($row = $res->fetch()) {
             $clustersConfiguration[] = $row;
