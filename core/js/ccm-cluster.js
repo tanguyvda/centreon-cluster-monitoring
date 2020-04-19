@@ -57,7 +57,6 @@ export default class CcmCluster {
     if (extendedInformations) {
       hostElement += `<td>${hostInformation.host_alias}</td>` +
         `<td>${hostInformation.host_address}</td>` +
-        `<td>${hostInformation.host_comment}</td>` +
         `<td>${$('<div/>').text(hostInformation.host_comment).html()}</td>`;
     }
 
