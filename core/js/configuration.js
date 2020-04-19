@@ -32,11 +32,15 @@ drag.initDragula();
 
 $(document).ready(function () {
   $(document).on('click', function (e) {
+    const parent = $(e.target).parent();
     // remove class selectedItem if click outside of the host list. Because of margin/padding it is much more intuitive
     // to not remove the selectedItem class if we click somewhere on the whole list. To unselect something from the list
     // people will tend to click outside of the list. This behaviour is better than having a random click unselect the
     // whole list because the click happened to be on the padding/marging of the parent div
-    if (!$(e.target).is('.ccm-host') && !$(e.target).parent().is('.ccm-host') && !$(e.target).is('#ccm-host_list')) {
+    if (!$(e.target).is('.ccm-host') &&
+      !$(parent).parent().is('.ccm-host') &&
+      !$(e.target).is('#ccm-host_list') &&
+      !$(e.target).parent().is('.ccm-host')) {
       $('.ccm-host').removeClass('selectedItem');
     }
   });

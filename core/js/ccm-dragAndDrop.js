@@ -313,6 +313,7 @@ export default class CcmDragAndDrop {
   // disables multiselect on items on the target
   unbindMultiselectOnTarget () {
     $(this.ccmTarget).children().each((index, el) => {
+      console.log(el);
       $(el).off('click');
     });
   }
