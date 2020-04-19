@@ -133,7 +133,16 @@ export default class CcmDragAndDrop {
 
         // prepare HTML before dropping
         $('#ccm-drop_cluster_group').addClass('modal-trigger');
+
+        // reset form to default state before triggering it
         $('#ccm-cluster_creation_table_body').empty();
+        $('#ccm-cluster_group_form_group_name').empty();
+        $('#ccm-inherit_dt').prop('checked', true);
+        $('#ccm-inherit_ack').prop('checked', true);
+        $('#ccm-status_calculation_method').prop('checked', false);
+        $('#ccm-cluster_group_form_cluster_name').empty();
+        $('#ccm-cluster_group_form_cluster_wthreshold').empty();
+        $('#ccm-cluster_group_form_cluster_cthreshold').empty();
 
         // create host list that we will display in the modal
         const keys = Object.keys(hostInformation);
@@ -192,12 +201,18 @@ export default class CcmDragAndDrop {
 
         $('#' + targetId).addClass('modal-trigger');
 
+        // reset modal parameters before triggering it
+        $('#ccm-cluster_form_cluster_name').val('');
+        $('#ccm-cluster_form_cluster_wthreshold').val('');
+        $('#ccm-cluster_form_cluster_cthreshold').val('');
+        $('#ccm-cluster_creation_table_body').empty();
+
         $('#ccm-modal_drop_cluster').data('cluster_group_id', clusterGroupId);
 
         // create host list that we will display in the modal
         const keys = Object.keys(hostInformation);
+
         for (const key of keys) {
-          console.log(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
           $('#ccm-cluster_creation_table_body')
             .append(self.cluster.buildHostElementForCollapsible(hostInformation[key], true));
         }
@@ -313,7 +328,6 @@ export default class CcmDragAndDrop {
   // disables multiselect on items on the target
   unbindMultiselectOnTarget () {
     $(this.ccmTarget).children().each((index, el) => {
-      console.log(el);
       $(el).off('click');
     });
   }

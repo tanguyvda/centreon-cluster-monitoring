@@ -645,9 +645,6 @@ class ccm
             throw new \Exception($e->getMessage(), $e->getCode());
         }
 
-        $file = fopen("/var/opt/rh/rh-php72/log/php-fpm/ccm_clustergroupid", "a") or die ("Unable to open file!");
-        fwrite($file, print_r($query,true));
-        fclose($file);
         while ($row = $res->fetch()) {
             $id = $row['cluster_group_id'];
         }

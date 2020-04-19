@@ -232,7 +232,8 @@ function saveCluster (conf) {
         drag.overCluster('ccm-li_' + conf.cluster_group_id + '_' + conf.clusters[0].cluster_name);
         drag.dropCluster('ccm-li_' + conf.cluster_group_id + '_' + conf.clusters[0].cluster_name, clusterGroupActions, masonry);
         drag.outCluster('ccm-li_' + conf.cluster_group_id + '_' + conf.clusters[0].cluster_name);
-        console.log(drag);
+
+        masonry.masonry();
       } else {
         console.log('not good');
       }
@@ -281,13 +282,13 @@ function loadClusterGroups () {
             drag.overCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name);
             drag.dropCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name, clusterGroupActions, masonry);
             drag.outCluster('ccm-li_' + clusterGroupId + '_' + this.cluster_name);
-
-            // add drop possibilities to the create cluster drop area
-            drag.draggable.containers.push($('#ccm-cluster_drop_area_' + clusterGroupId)[0]);
-            drag.overCreateCluster('ccm-cluster_drop_area_' + clusterGroupId);
-            drag.dropCreateCluster('ccm-cluster_drop_area_' + clusterGroupId, clusterGroupId);
-            drag.outCreateCluster('ccm-cluster_drop_area_' + clusterGroupId);
           });
+
+          // add drop possibilities to the created cluster drop area
+          drag.draggable.containers.push($('#ccm-cluster_drop_area_' + clusterGroupId)[0]);
+          drag.overCreateCluster('ccm-cluster_drop_area_' + clusterGroupId);
+          drag.dropCreateCluster('ccm-cluster_drop_area_' + clusterGroupId, clusterGroupId, masonry);
+          drag.outCreateCluster('ccm-cluster_drop_area_' + clusterGroupId);
 
           // add cluster group card to the masonry object and refresh card positioning
           masonry.masonry('appended', $('#ccm_cluster_group_card_' + clusterGroupId));
