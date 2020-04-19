@@ -140,10 +140,9 @@ export default class CcmCluster {
   * @param {object} conf The configuration of a cluster group
   * @return {element} card The card html element for a cluster group
   */
-  createClusterGroupCard (conf) {
+  createClusterGroupCard (conf, clusterGroupId) {
     let clusterHtml = '';
     let hostHtml = '';
-    const clusterGroupId = conf.cluster_group_id;
     $.each(conf.clusters, function () {
       const clusterId = this.cluster_id;
 

@@ -107,13 +107,8 @@ class ccm
         }
 
         $pdoParams =  array(
-            'clusterGroupName' => array(
-                'parameter' => ':clusterGroupName_' . $clusterGroupName,
-                'type' => 'string',
-                'value' => $clusterGroupName
-            ),
             'clusterName' => array (
-                'parameter' => ':clusterName_' . $clusterName,
+                'parameter' => ':clusterName',
                 'type' => 'string',
                 'value' => $clusterName
             ),
@@ -129,11 +124,11 @@ class ccm
             )
         );
 
+        $clusterGroupId = $this->_getClusterGroupId($clusterGroupName);
+
         $query = "INSERT INTO mod_ccm_cluster (`cluster_name`,`cluster_group_id`,`warning_threshold`," .
-            " `critical_threshold`) VALUE (" .
-            " :clusterName_clusterName, (SELECT cluster_group_id FROM mod_ccm_cluster_group" .
-            " WHERE `cluster_group_name` = :clusterGroupName_" . $clusterGroupName . ")," .
-            " :warning_" . $warningThreshold . ", :critical_" . $criticalThreshold . ")";
+            " `critical_threshold`) VALUE (:clusterName," .
+            " $clusterGroupId, :warning_" . $warningThreshold . ", :critical_" . $criticalThreshold . ")";
 
         foreach ($pdoParams as $key => $param) {
             $mainQueryParameters[] = [
@@ -179,7 +174,7 @@ class ccm
 
         $res->execute();
 
-        return true;
+        return $clusterGroupId;
     }
 
     /**
@@ -205,7 +200,7 @@ class ccm
                 'value' => $clusterGroupId
             ),
             'clusterName' => array (
-                'parameter' => ':clusterName_' . $clusterName,
+                'parameter' => ':clusterName',
                 'type' => 'string',
                 'value' => $clusterName
             ),
@@ -222,7 +217,7 @@ class ccm
         );
 
         $query = "INSERT INTO mod_ccm_cluster (`cluster_name`,`cluster_group_id`,`warning_threshold`," .
-            " `critical_threshold`) VALUE ( :clusterName_" . $clusterName . "," .
+            " `critical_threshold`) VALUE ( :clusterName," .
             " :clusterGroupId_" . $clusterGroupId . ", :warning_" . $warningThreshold .
             ", :critical_" . $criticalThreshold . ")";
 
@@ -620,5 +615,35 @@ class ccm
         }
 
         return true;
+    }
+
+    /**
+    * get the id of a cluster group
+    *
+    * @param {string} $clusterGroupName The name of the cluster group
+    *
+    * @return {int} $id The id of the cluster group
+    *
+    * @throw \Exception if we can't get id
+    */
+    protected function _getClusterGroupId($clusterGroupName) {
+        $query = "SELECT cluster_group_id FROM mod_ccm_cluster_group WHERE cluster_group_name=:clusterGroupName";
+
+        $res = $this->db->prepare($query);
+        $res->bindValue(':clusterGroupName', (string)$clusterGroupName, PDO::PARAM_STR);
+
+        try {
+            $res->execute();
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
+
+        $file = fopen("/var/opt/rh/rh-php72/log/php-fpm/ccm_clustergroupid", "a") or die ("Unable to open file!");
+        fwrite($file, print_r($query,true));
+        fclose($file);
+        while ($row = $res->fetch()) {
+            $id = $row['cluster_group_id'];
+        }
+        return $id;
     }
 }

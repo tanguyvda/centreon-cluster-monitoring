@@ -175,21 +175,23 @@ function saveClusterGroup (conf) {
       ccm_method: 'saveClusterGroup',
       param: conf
     }),
-    success: function (data) {
-      if (data) {
+    success: function (clusterGroupId) {
+      if (clusterGroupId) {
         // close the cluster group creation popup
         $('#ccm-close_cluster_group_modal')[0].click();
 
         // create the html card and display it
-        const card = cluster.createClusterGroupCard(conf);
-        $(card).insertAfter('#ccm-drop_cluster_group');
-
+        const card = cluster.createClusterGroupCard(conf, clusterGroupId);
+        $('.ccm-cluster_group_wrapper').append(card);
         // create material object for our card
-        material.buildTooltip('card-tooltipped-' + conf.cluster_group_name);
-        material.buildCollapsible('ccm-cluster_group_' + conf.cluster_group_name);
+        material.buildTooltip('card-tooltipped-' + clusterGroupId);
+        material.buildCollapsible('ccm-cluster_group_' + clusterGroupId);
 
         // initiate the action list that we can do on the whole cluster group
-        clusterGroupActions = cluster.initiateClusterGroupActions(conf.cluster_group_id);
+        clusterGroupActions = cluster.initiateClusterGroupActions(clusterGroupId);
+
+        masonry.masonry('appended', $('#ccm_cluster_group_card_' + clusterGroupId));
+        masonry.masonry();
       } else {
         console.log('not good');
       }
@@ -254,15 +256,15 @@ function loadClusterGroups () {
         // for each found cluster group in the database...
         $.each(data, function (index, value) {
           // create an html card
-          const card = cluster.createClusterGroupCard(this);
           const clusters = this.clusters;
           const clusterGroupId = this.cluster_group_id;
+          const card = cluster.createClusterGroupCard(this, this.cluster_group_id);
 
           // display the card
           $('.ccm-cluster_group_wrapper').append(card);
 
           // add material component to the card
-          material.buildTooltip('card-tooltipped-' + this.cluster_group_name);
+          material.buildTooltip('card-tooltipped-' + clusterGroupId);
           materialInstance = material.buildCollapsible('ccm-cluster_group_' + clusterGroupId);
 
           // initiate the list of actions users will do (remove host from cluster, remove cluster from cluster group...)
