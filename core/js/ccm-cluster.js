@@ -141,8 +141,9 @@ export default class CcmCluster {
   */
   createClusterGroupCard (conf, clusterGroupId) {
     let clusterHtml = '';
-    let hostHtml = '';
+
     $.each(conf.clusters, function () {
+      let hostHtml = '';
       const clusterId = this.cluster_id;
 
       // for each host in each cluster we create the html part to display hosts

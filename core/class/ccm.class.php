@@ -390,7 +390,11 @@ class ccm
                 foreach ($clusters as $cluster) {
                     $clusterGroupsConfiguration[$i]['clusters'][$j] = $cluster;
                     $hosts = $this->_getClustersHosts(array($cluster['cluster_id']));
-                    $clusterGroupsConfiguration[$i]['clusters'][$j]['hosts'] = $hosts;
+
+                    if (isset($hosts) && $hosts != '') {
+                        $clusterGroupsConfiguration[$i]['clusters'][$j]['hosts'] = $hosts;
+                    }
+
                     $j++;
                 }
             }
@@ -523,6 +527,8 @@ class ccm
             throw new \Exception($e->getMessage(), $e->getCode());
         }
 
+        $hosts = [];
+
         while ($row = $res->fetch()) {
             $hosts[] = $this->_associateHostWithIcon($row);
         }
@@ -544,6 +550,7 @@ class ccm
                         'type' => PDO::PARAM_INT
                     ];
                 }
+
                 $query = "DELETE FROM mod_ccm_cluster WHERE cluster_id IN (" . implode(', ', $clusterId) . ")";
                 $res = $this->db->prepare($query);
 
@@ -561,6 +568,7 @@ class ccm
 
             } else if ($key != 'clusters') {
                 if (!in_array($key, $delete['clusters'])) {
+
                     foreach ($delete[$key]['hosts'] as $host) {
                         $hostId[] = ':pdo_' . $host;
                         $mainQueryParameters[] = [
