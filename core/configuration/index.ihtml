@@ -22,9 +22,9 @@
   </nav>
 </div>
 <div class="ccm-host_list_wrapper row">
-  <div id="top_overlay"><i id="top_overlay_icon" class="material-icons">keyboard_arrow_up</i></div>
-  <div id="ccm-host_list" class="ccm-container"></div>
-  <div id="bottom_overlay"><i id="bottom_overlay_icon" class="material-icons">keyboard_arrow_down</i></div>
+  <div id="top_overlay" class="top-overlay"><i id="top_overlay_icon" class="material-icons">keyboard_arrow_up</i></div>
+  <div id="ccm-host_list" class="ccm-container ccm-host_list"></div>
+  <div id="bottom_overlay" class="bottom-overlay"><i id="bottom_overlay_icon" class="material-icons">keyboard_arrow_down</i></div>
 </div>
 <div class="row ccm-parent">
   <div class="ccm-wrapper col s12">

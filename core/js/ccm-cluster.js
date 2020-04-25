@@ -145,29 +145,33 @@ export default class CcmCluster {
     $.each(conf.clusters, function () {
       let hostHtml = '';
       const clusterId = this.cluster_id;
+      console.log(this);
 
       // for each host in each cluster we create the html part to display hosts
       $.each(this.hosts, function () {
         hostHtml += `<tr data-cluster_group_id="${clusterGroupId}" data-cluster_id="${clusterId}" ` +
-          `data-host_id="${this.host_id}"><td>${this.host_name}</td>` +
-          '<td><i class="material-icons" onClick="removeHost(this,' +
-            `${clusterGroupId},${clusterId},${this.host_id})">highlight_off</i></td></tr>`;
+          `data-host_id="${this.host_id}" class="valign-wrapper tr-cluster">` +
+            `<td class="col s2"><img class="ico-18" src="${this.icon}"/></td>` +
+            `<td class="col s8">${this.host_name}</td>` +
+            '<td class="col s2"><i class="material-icons" onClick="removeHost(this,' +
+            `${clusterGroupId},${clusterId},${this.host_id})">highlight_off</i></td>` +
+          '</tr>';
       });
 
       // for each cluster in the cluster group we create the html part to display the cluster
       clusterHtml += `<li id="ccm-li_${clusterGroupId}_${this.cluster_name}" class="ccm-droppable_list">` +
-        `<div class="collapsible-header" style="color: grey;" data-cluster_group_id="${clusterGroupId}" ` +
-          `data-cluster_id="${this.cluster_id}">${this.cluster_name}` +
-          `<i class="material-icons" onClick="removeCluster(this,${clusterGroupId},${clusterId}` +
-          ')">highlight_off</i></div>' +
+        `<div class="collapsible-header col s12 valign-wrapper" data-cluster_group_id="${clusterGroupId}" ` +
+          `data-cluster_id="${this.cluster_id}">` +
+          `<div class="cluster-title col s9">${this.cluster_name}</div>` +
+          `<div class="warning-bubble bubbles col s1">${this.warning_threshold}</div>` +
+          `<div class="critical-bubble bubbles col s1">${this.critical_threshold}</div>` +
+          '<div class="col s1 cluster-remove">' +
+            `<i class="material-icons" onClick="removeCluster(this,${clusterGroupId},${clusterId}` +
+            ')">highlight_off</i>' +
+          '</div>' +
+        '</div>' +
         '<div class="collapsible-body">' +
           '<table>' +
-            '<thead>' +
-              '<tr>' +
-                '<th>Host name</th>' +
-                '<th>Remove</th>' +
-              '</tr>' +
-            '</thead>' +
             `<tbody>${hostHtml}</tbody>` +
           '</table>' +
         '</div>' +
@@ -176,15 +180,17 @@ export default class CcmCluster {
 
     // we create the cluster group card
     const card = `<div id="ccm_cluster_group_card_${clusterGroupId}" ` +
-      `class="col s12 m6 l6 xl4 ccm-flexbox_card masonry-grid-item" data-cluster_group_id="${clusterGroupId}">` +
-      '<div class="card">' +
+      `class="row col s12 m6 l6 xl4 ccm-flexbox_card masonry-grid-item" data-cluster_group_id="${clusterGroupId}">` +
+      '<div class="card cluster-group-card col s12">' +
         '<div class="card-content white-text">' +
-          `<span class="card-title card-tooltipped-${clusterGroupId}" data-position="top" ` +
-            `data-tooltip="${conf.cluster_group_name}">${conf.cluster_group_name}</span>` +
-          `<ul id="ccm-cluster_group_${clusterGroupId}" class="collapsible">${clusterHtml}</ul>` +
-        `<div id="ccm-cluster_drop_area_${clusterGroupId}" class="ccm-drop_only_area valign-wrapper">` +
+          '<div class="card-title col s12 valign-wrapper">' +
+            `<div class="title-text col s10 m10 l10 xl10 card-tooltipped-${clusterGroupId}" data-position="top" ` +
+              `data-tooltip="${conf.cluster_group_name}">${conf.cluster_group_name}</div>` +
+            '<div class="cluster-group-settings col s2 m2 l2 xl2 valign-wrapper"><i class="material-icons">settings</i></div></div>' +
+          `<ul id="ccm-cluster_group_${clusterGroupId}" class="collapsible col s10 offset-s1">${clusterHtml}</ul>` +
+        `<div id="ccm-cluster_drop_area_${clusterGroupId}" class="ccm-drop_only_area col s10 offset-s1">` +
         '<p class="center-align">DROP YOUR HOSTS HERE<p></div></div>' +
-        '<div class="card-action">' +
+        '<div class="card-action col s8">' +
           `<a href="#" onClick="updateClusterGroup(${clusterGroupId})">SAVE</a>` +
         '</div>' +
       '</div>' +
@@ -201,33 +207,37 @@ export default class CcmCluster {
   */
   addClusterToClusterGroup (conf) {
     let clusterHtml = '';
-    let hostHtml = '';
     const clusterGroupId = conf.cluster_group_id;
+
     $.each(conf.clusters, function () {
+      let hostHtml = '';
       const clusterId = this.cluster_id;
 
       // for each host in each cluster we create the html part to display hosts
       $.each(this.hosts, function () {
         hostHtml += `<tr data-cluster_group_id="${clusterGroupId}" data-cluster_id="${clusterId}" ` +
-          `data-host_id="${this.host_id}"><td>${this.host_name}</td>` +
-          '<td><i class="material-icons" onClick="removeHost(this,' +
-            `${clusterGroupId},${clusterId},${this.host_id})">highlight_off</i></td></tr>`;
+          `data-host_id="${this.host_id}" class="valign-wrapper tr-cluster">` +
+            `<td class="col s2"><img class="ico-18" src="${this.icon}"/></td>` +
+            `<td class="col s8">${this.host_name}</td>` +
+            '<td class="col s2"><i class="material-icons" onClick="removeHost(this,' +
+            `${clusterGroupId},${clusterId},${this.host_id})">highlight_off</i></td>` +
+          '</tr>';
       });
 
       // for each cluster in the cluster group we create the html part to display the cluster
       clusterHtml += `<li id="ccm-li_${clusterGroupId}_${this.cluster_name}" class="ccm-droppable_list">` +
-        `<div class="collapsible-header" style="color: grey;" data-cluster_group_id="${clusterGroupId}" ` +
-          `data-cluster_id="${this.cluster_id}">${this.cluster_name}` +
-          `<i class="material-icons" onClick="removeCluster(this,${clusterGroupId},${clusterId}` +
-          ')">highlight_off</i></div>' +
+        `<div class="collapsible-header col s12 valign-wrapper" data-cluster_group_id="${clusterGroupId}" ` +
+          `data-cluster_id="${this.cluster_id}">` +
+          `<div class="cluster-title col s9">${this.cluster_name}</div>` +
+          `<div class="warning-bubble bubbles col s1">${this.warning_threshold}</div>` +
+          `<div class="critical-bubble bubbles col s1">${this.critical_threshold}</div>` +
+          '<div class="col s1 cluster-remove">' +
+            `<i class="material-icons" onClick="removeCluster(this,${clusterGroupId},${clusterId}` +
+            ')">highlight_off</i>' +
+          '</div>' +
+        '</div>' +
         '<div class="collapsible-body">' +
           '<table>' +
-            '<thead>' +
-              '<tr>' +
-                '<th>Host name</th>' +
-                '<th>Remove</th>' +
-              '</tr>' +
-            '</thead>' +
             `<tbody>${hostHtml}</tbody>` +
           '</table>' +
         '</div>' +

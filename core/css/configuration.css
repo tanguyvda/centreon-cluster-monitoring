@@ -1,38 +1,36 @@
+/* ==========================================================================
+   Prepare iframe
+   ========================================================================== */
+
 .pathway {
   display: none;
 }
 
 body {
-  background-color: #fff;
-  margin: 0 auto;
-  font-family: 'Open Sans', Helvetica;
-  color: #222f39;
-  max-width: 100%;
   height: 100%;
+  margin: 0 auto;
   max-height: 100%;
+  max-width: 100%;
 }
 
 html, body {
-  -webkit-box-sizing: border-box;
+  background-color: #E8E9F9;
   -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  background-color: #ededed;
 }
 
 section {
-  padding-top: 0 !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
+  padding-top: 0 !important;
 }
 
+/* ==========================================================================
+   Navigation bar configuration
+   ========================================================================== */
 
-*, *:before, *:after {
-  -webkit-box-sizing: inherit;
-  -moz-box-sizing: inherit;
-  box-sizing: inherit;
-}
-
-#ccm-search_menu {
+.navbar-fixed {
   background-color: #232F39;
   height: 8%;
   margin-bottom: 0;
@@ -43,129 +41,188 @@ nav {
   height: 8%;
 }
 
-#ccm-drop_cluster_group {
-  border: 2px dashed #ededed;
-  color: #ededed;
-  font-weight: bolder;
+.ccm-drop_cluster_group {
+  border: 2px dashed #EDEDED;
+  color: #EDEDED;
   font-size: 12px;
-  line-height: 12px;
+  font-weight: bolder;
   height: 90%;
+  line-height: 12px;
 }
 
+/* ==========================================================================
+   Host list sidebar
+   ========================================================================== */
+
 .ccm-host_list_wrapper {
-  color: #ededed;
-  height: 100%;
-  width: 20%;
-  min-width: 20%;
+  background-color: #2794FF;
+  color: #EDEDED;
   float: left;
+  height: 100%;
+  min-width: 20%;
   position: fixed;
-  background-color: #3e5466;
+  width: 20%;
 }
 
 .ccm-host {
+  border-bottom: 1px solid #EDEDED;
   font-size: 12px;
-  line-height: 40px;
   height: 40px;
-  border-bottom: 1px solid #ededed;
+  line-height: 40px;
   vertical-align: middle;
 }
 
-#top_overlay {
-  height: 44px;
-  width: 100%;
-  text-align: center;
+.top-overlay {
   display: table;
+  height: 44px;
+  text-align: center;
+  width: 100%;
   z-index: 2;
 }
 
-#top_overlay > i {
+.top-overlay > i {
   display: table-cell;
   vertical-align: middle;
 }
 
-#bottom_overlay {
-  width: 100%;
+.bottom-overlay {
+  display: table;
   height: 40px;
   text-align: center;
-  display: table;
+  width: 100%;
 }
 
-#bottom_overlay > i {
+.bottom-overlay > i {
   display: table-cell;
   vertical-align: middle;
 }
 
-#ccm-host_list {
+.ccm-host_list {
   cursor: pointer;
-  overflow: auto;
   height: 100%;
+  overflow: auto;
 }
 
-#ccm-host_list::-webkit-scrollbar {
+.ccm-host_list::-webkit-scrollbar {
   display: none;
 }
 
+/* Remove scroll bar when using firefox */
 @-moz-document url-prefix() {
-  #ccm-host_list {
+  .ccm-host_list {
     scrollbar-width: none;
   }
 }
 
+/* ==========================================================================
+   Cluster group designs
+   ========================================================================== */
+
 .card {
+  background-color: #FFF;
   border-radius: 10px;
-  /* background-image: -moz-linear-gradient( 143deg, rgb(224,199,193) 0%, rgb(237,237,237) 100%);
-  background-image: -webkit-linear-gradient( 143deg, rgb(224,199,193) 0%, rgb(237,237,237) 100%);
-  background-image: -ms-linear-gradient( 143deg, rgb(224,199,193) 0%, rgb(237,237,237) 100%); */
-  box-shadow: 0px 3px 7px 0px rgba(1, 2, 1, 0.49);
-  background-color: #009fdf;
+  box-shadow: 0 3px 7px 0 rgba(1, 2, 1, 0.49);
+  padding: 0 !important;
+}
+
+.card .card-content {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  padding: 0;
+}
+
+.card-title {
+  background-color:  #2794FF;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  color: #EDEDED;
+  height: 50px;
+  vertical-align: middle;
+}
+
+.title-text {
+  font-size: 24px;
+  height: 50px;
+  line-height: 50px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cluster-group-settings {
+  height: 50px;
+}
+
+/* ==========================================================================
+   Cluster group collapsible headers
+   ========================================================================== */
+.collapsible {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.card-content > .collapsible {
+  border-left: 1px solid #EDEDED;
+  border-right: 1px solid #EDEDED;
+  border-top: 1px solid #EDEDED;
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.collapsible-header {
+  color: #232F39;
+  padding-right: 5px;
+}
+
+.cluster-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bubbles {
+  border-radius: 8px;
+  text-align: center;
+  padding: 0 !important
+}
+
+.warning-bubble {
+  background-color: #FFE893;
+  margin-right: 3px !important;
+}
+
+.critical-bubble {
+  background-color: #FFAFAF;
+}
+
+/* ==========================================================================
+   Cluster group collapsible body
+   ========================================================================== */
+
+.collapsible-body {
+  background-color: #E1F4FE;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.tr-cluster {
+  border-bottom: 0 solid rgba(0, 0, 0, 0);
+  color: #2794FF;
 }
 
 .ccm-drop_only_area {
-  height: 80px;
-  border: 8px dashed #ededed;
-  color: #ededed;
+  border: 1px dashed #2794FF;
+  color: #2794FF;
   font-weight: bolder;
-  /* text-align: center; */
+  height: 50px;
+  line-height: 50px;
+  vertical-align: middle;
 }
 
 .ccm-parent {
   float: right;
   width: 80%;
 }
-/* .ccm-drop_only_area > p {
-  display: inline;
-  text-align: center;
-} */
-
-/* .ccm-flexbox_wrap {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-@media (min-width: 1200px) {
-  .ccm-flexbox_card {
-    flex: 25%;
-  }
-}
-
-@media (max-width: 1200px) {
-  .ccm-flexbox_card {
-    flex: 50%;
-  }
-}
-
-@media (max-width: 992px) {
-  .ccm-flexbox_card {
-    flex: 50%;
-  }
-}
-
-@media (max-width: 600px) {
-  .ccm-flexbox_card {
-    flex: 100%;
-  }
-} */
-
 
 .ccm-host_name {
   overflow: hidden;
@@ -173,10 +230,6 @@ nav {
   white-space: nowrap;
 }
 
-.card-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
 .ccm-icon_wrapper {
   line-height: 40px;
