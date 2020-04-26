@@ -20,7 +20,7 @@ var cluster = new CcmCluster(clusterGroupActions);
 // init drag and drop
 var dragulaOptions = {
   invalid: function (el, handle) {
-    if ($(el).hasClass('ccm-droppable_list')) {
+    if ($(el).hasClass('ccm-droppable_only_area')) {
       return true;
     }
   },

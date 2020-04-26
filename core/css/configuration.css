@@ -47,7 +47,8 @@ nav {
   font-size: 12px;
   font-weight: bolder;
   height: 90%;
-  line-height: 12px;
+  line-height: 100%;
+  text-align: center;
 }
 
 /* ==========================================================================

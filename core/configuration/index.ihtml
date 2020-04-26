@@ -10,8 +10,8 @@
 <div id="ccm-search_menu" class="row navbar-fixed">
   <nav>
     <div class="nav-wrapper col s12">
-      <div id="ccm-drop_cluster_group" class="ccm-drop_cluster_group valign-wrapper col s3">
-        <div class="center-align">DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP</div>
+      <div id="ccm-drop_cluster_group" class="ccm-drop_cluster_group valign-wrapper ccm-droppable_only_area col s3">
+        DRAG AND DROP YOUR HOSTS TO CREATE A CLUSTER GROUP
       </div>
       <div class="input-field ccm-search_host_list col s3">
         <i class="material-icons prefix">search</i>
